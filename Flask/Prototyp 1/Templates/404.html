@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 - Page Not Found</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #3a3a3a;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            color: rgb(209, 205, 205);
+        }
+
+        .container {
+            text-align: center;
+            margin-top: 10vh;
+        }
+
+        h1 {
+            font-size: 3em;
+            color: #cec9c9;
+        }
+
+        p {
+            font-size: 1.2em;
+            color: #e7d1d1;
+        }
+
+        img {
+            width: 100%;
+            max-width: 400px;
+            height: auto;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    {% include "nav_template.html "%}
+    <div class="container">
+        <h1>404 - Page Not Found</h1>
+        <p>Entweder wir ham verkackt, oder du</p>
+        <!-- <img src="{{ url_for('static', filename='404_image.jpg') }}" alt="404 Image"> -->
+    </div>
+</body>
+
+</html>
