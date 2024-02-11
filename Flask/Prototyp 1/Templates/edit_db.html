@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-16">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bauteil Editieren</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='edit_db.css') }}">
+
+</head>
+
+<body>
+    {% include "nav_template.html" %}
+    <p>{{id}}</p>
+    {% if db_entry|length == 0 %}
+    <p>Wer so klug ist, da oben seinen eigenen krempel reinzuschreiben, muss damit rechnen das alles hin is
+        aber grundsätzlich unterstütze ich ja ein bisschen curiosity, deswegen habe ich diesen failsafe eingebaut
+    </p>
+    {% else %}
+    <p>{{db_entry}}</p>
+    {% for category in db_entry[0]%}
+    <div class="db_entry_div">
+        <p>{{category}}</p>
+        <p>{{db_entry[0][category]}}</p>
+        {% if category != "id" %}
+        <button onclick="edit_db_entry({{db_entry[0]}}, '{{category}}')">&#x2807;</button>
+        {% else %}
+        {% endif %}
+    </div>
+
+    {% endfor%}
+    {% endif %}
+
+    <div id="popup" class="popup">
+        <div class="popup-content" id="popup-content">
+            <!-- Your content goes here -->
+            <p id="pop_entry">This is your popup content.</p>
+            <p id="pop_cat"></p>
+            <p id="ac_val"></p>
+            <p id="db_resp"></p>
+            <input id="new_val_inp" type="text">
+
+            <button id="sub_btn"
+                onClick="set_db_val({{db_entry[0]}}, document.getElementById('pop_cat').innerText)">Submit</button>
+            <button id="closePopup" onClick="closePopup()">Close</button>
+        </div>
+    </div>
+
+
+</body>
+<script>
+    function edit_db_entry(entry, category) {
+        console.log(entry)
+        console.log(category)
+        document.getElementById("pop_entry").innerText = JSON.stringify(entry)
+        document.getElementById("pop_cat").innerText = category
+        document.getElementById("ac_val").innerText = JSON.stringify(entry[category])
+        openPopup()
+
+    }
+
+    function set_db_val(entry, category) {
+        new_val = document.getElementById("new_val_inp").value
+        console.log(new_val + " new value")
+
+        var xhr = new XMLHttpRequest();
+        xhr.open('post', '/manage_db/' + entry['id'], true);
+        // Set up the callback function for when the request completes
+
+        var formData = new FormData();
+        // Add the selected data to the FormData object
+        formData.append('change_db_entry', JSON.stringify({ "id": entry['id'], "cat_to_change": category, "new_value": new_val }));
+
+
+        xhr.onload = function () {
+            if (xhr.status === 200) {
+                // Handle the successful response here
+                console.log('Form submitted successfully');
+                ajax_rep = JSON.parse(xhr.response)['response']
+                console.log(ajax_rep)
+                document.getElementById("db_resp").innerText = ajax_rep
+            } else {
+                // Handle errors or other statuses
+                console.error('Form submission failed');
+            }
+        };
+
+        // Send the FormData object with the request
+        xhr.send(formData);
+
+    }
+
+    function openPopup() {
+        var popup = document.getElementById('popup');
+        popup.style.display = 'flex';
+    }
+
+    function closePopup() {
+        var popup = document.getElementById('popup');
+        document.getElementById('new_val_inp').value = ""
+        popup.style.display = 'none';
+        
+        //for the updated data
+        window.location.replace(window.location.href)
+    }
+</script>
+
+</html>

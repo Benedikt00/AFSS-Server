@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Datenbank Verwalten</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='manage_db.css') }}"> 
+</head>
+<body>
+    {% include "nav_template.html" %}
+    
+    <!-- TODO: 
+    + Neuen Artikel einfügen
+    + Artikelstamm bearbeiten:
+        - Sucha nach Artikel anch Kategorie
+        - Sortieren
+        - Editieren-->
+    <div id="search_keys">
+    {% for key in kategories %}
+    {% if key not in ['Bauteilanzahl', 'Bauteilanzahl_min', 'Gewicht_pro_teil_in_g', 'eingelagert', 'ausgelagert', 'wird_eingelagert', 'wird_ausgelagert', 'anzahl_auslagerungen'] %}
+        <div class="kategory_search_div">
+        <p>{{key}}</p>
+        <input class="inp_key" onSubmit="search_entries({{key}}, {{data_to_display}})">
+        </div>
+        
+    {% else %}
+    {% endif %}
+        
+    {% endfor %}</div>
+    
+
+
+    <div id="db_e_macro">
+    
+    {% include "manage_db_data_list_macro.html" %}
+        
+    </div>
+    
+    
+</body>
+
+<script>
+function search_entries(category, searchtherm){
+    console.log("asdfasdd")
+    var xhr = new XMLHttpRequest();
+    xhr.open('post', '/manage_db', true);
+    // Set up the callback function for when the request completes
+
+    var formData = new FormData();
+    // Add the selected data to the FormData object
+    formData.append('search_db', JSON.stringify({ "category": category, "searchtherm": searchtherm }));
+
+
+    xhr.onload = function () {
+        if (xhr.status === 200) {
+            // Handle the successful response here
+            console.log('Form submitted successfully');
+                console.log(xhr.response)
+                {# document.open();
+                document.write(xhr.response);
+                document.close(); #}
+        } else {
+            // Handle errors or other statuses
+            console.error('Form submission failed');
+        }
+    };
+
+    // Send the FormData object with the request
+    xhr.send(formData);
+}
+
+function sort_for_key(key, data){
+    console.log(key)
+    console.log(data)
+    var xhr = new XMLHttpRequest();
+    xhr.open('post', '/manage_db', true);
+    // Set up the callback function for when the request completes
+
+    var formData = new FormData();
+    // Add the selected data to the FormData object
+    formData.append('sort_db_entrys', JSON.stringify({ "key": key, "current_data": data }));
+
+
+    xhr.onload = function () {
+        if (xhr.status === 200) {
+            // Handle the successful response here
+            console.log('Form submitted successfully');
+            ajax_rep = JSON.parse(xhr.response)['response']
+            document.getElementById('db_e_macro').innerHTML = ajax_rep
+        } else {
+            // Handle errors or other statuses
+            console.error('Form submission failed');
+        }
+    };
+
+    // Send the FormData object with the request
+    xhr.send(formData);
+}
+
+</script>
+
+</html>

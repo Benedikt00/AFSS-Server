@@ -1,0 +1,15 @@
+.list tr{
+    margin: 5px 0;
+    cursor: pointer;
+}
+
+.kategory_search_div{
+    padding: 10px;
+    display: flex;
+    align-items: center;
+}
+
+.kategory_search_div input{
+    margin-left: 40px;
+    max-height: 30px;
+}

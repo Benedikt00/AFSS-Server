@@ -1,7 +1,12 @@
-{% macro render_dropdown_menue(index, keys_to_select, selected_values) %}
+{% macro render_dropdown_menue(index, keys_to_select, selected_values, index_choose) %}
 
+{% if Flase %}
 <!-- ACHTUNG DIESE DOKUMENT DARF NICHT AUTO-FORMATIERT WERDEN-->
 <!-- Der Auto-Formatter zerstört die Flask-einbettung im CSS-->
+<!-- zu enppfehlen ist die vs code extension "better jinja" dann kann unten 
+    rechts jinja html als sprahe verwendet werden. formattierung get zwar trozdem nicht, 
+    aber es werden keine errors mehr gemeldet-->
+{% endif %}
 
 <style>
 
@@ -27,13 +32,18 @@
 
 </style>
 
+{% if Flase %}
 <!-- ACHTUNG DIESE DOKUMENT DARF NICHT AUTO-FORMATIERT WERDEN-->
 <!-- Der Auto-Formatter zerstört die Flask-einbettung im CSS-->
+{% endif %}
 
 <div id="myDropdown{{index}}" class="dropdown-content">
         <!-- <input type="text" name="dp_id{{index}}"> -->
         <input type="text" 
-            placeholder="Choose.." 
+            {% if index_choose == index %}
+                    placeholder="Choose.."
+            {% endif %}
+            
             id="search{{index}}"
             class = "dp_input"
             onkeyup="filterFunction{{index}}()"
@@ -48,16 +58,20 @@
         </div>
 </div>
 <p></p>
-
+{% if Flase %}
 <!-- ACHTUNG DIESE DOKUMENT DARF NICHT AUTO-FORMATIERT WERDEN-->
 <!-- Der Auto-Formatter zerstört die Flask-einbettung im CSS-->
+{% endif %}
+
+
 
 <script>
-    console.log("{{selected_values[index]}}");
-    console.log("kdkdop");
+
+
     {% if selected_values[index] != "" %} 
     document.getElementById("search{{index}}").value = "{{selected_values[index]}}"
-    {% endif %} 
+    {% endif %}  
+
 
     function toggleElement(elementId) {
         
@@ -77,14 +91,17 @@
     function selectOption{{index}}(option) {
         // Close the dropdown after selecting an option
         document.getElementById("search{{index}}").value = option
+
         closeDropdown{{index}}();
         
         submitForm('form_dp', {{index}})
 
     }
     
-    /* ACHTUNG DIESE DOKUMENT DARF NICHT AUTO-FORMATIERT WERDEN
-    Der Auto-Formatter zerstört die Flask-einbettung im CSS */
+{% if Flase %}
+<!-- ACHTUNG DIESE DOKUMENT DARF NICHT AUTO-FORMATIERT WERDEN-->
+<!-- Der Auto-Formatter zerstört die Flask-einbettung im CSS-->
+{% endif %}
 
     function display_drop{{index}}() {
         //Displays the Dropdown Menue
