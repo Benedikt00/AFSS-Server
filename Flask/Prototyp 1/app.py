@@ -87,6 +87,15 @@ def selection():
 def manage_db():
 	db_entrys_to_display = fr_db.load_first_x_rows(10)
 	
+	min_max_cats = fr_db.get_keys_of_type_num()
+
+	min_max_s = {}
+
+	for cat in min_max_cats:
+		min_max_s[cat] = fr_db.get_min_max_val(cat)
+
+	#log.info(min_max_s)
+
 	if request.method == 'POST':
 		log.info(f"manage dp recieved post request")
 		data = request.form.to_dict()
@@ -94,6 +103,8 @@ def manage_db():
 			inp = json.loads(data["sort_db_entrys"])
 			#log.info(f'inp {type(inp)}: {inp}')
 			sorted = fr_db.helper_sort_dict_by_value(inp['key'], inp["current_data"])
+			log.info(f'sorted {type(sorted)}: {sorted}')
+
 			template = render_template("manage_db_data_list_macro.html", data_to_display = sorted)
 		
 			return json.dumps({'success':True, 'response': [template, sorted]}), 200, {'ContentType':'application/json'}
@@ -101,12 +112,17 @@ def manage_db():
 
 		if 'search_db' in data.keys():
 			inp = json.loads(data["search_db"])
-			log.info(f'inp {type(inp)}: {inp}')
-			searched = "" #fr_db.load_db_search_category()
+			#log.info(f'inp {type(inp)}: {inp}')
+			searched = fr_db.load_db_search(inp)
+			log.info(f'searched {type(searched)}: {searched}')
 			template = render_template("manage_db_data_list_macro.html", data_to_display = searched)
-			return json.dumps({'success':True, 'response': [template, searched]}), 200, {'ContentType':'application/json'}
+			#log.info(f'template {type(template)}: {template}')
+			return json.dumps({'success':True, 'response': [template, [dict(row) for row in searched]]}), 200, {'ContentType':'application/json'}
 
-	return render_template('manage_db.html', data_to_display = db_entrys_to_display, kategories = fr_db.get_db_keys())
+	return render_template('manage_db.html', 
+						data_to_display = db_entrys_to_display, 
+						kategories = fr_db.get_db_keys(), 
+						min_max_dict = min_max_s)
 
 @app.route('/manage_db/<id>', methods=["get" ,"post"])
 def edit_db(id):
