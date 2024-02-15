@@ -85,24 +85,26 @@ def selection():
 
 @app.route('/manage_db', methods=["get" ,"post"])
 def manage_db():
-	db_entrys_to_display = fr_db.load_db_all()
+	db_entrys_to_display = fr_db.load_first_x_rows(10)
 	
 	if request.method == 'POST':
 		log.info(f"manage dp recieved post request")
 		data = request.form.to_dict()
 		if 'sort_db_entrys' in data.keys():
 			inp = json.loads(data["sort_db_entrys"])
-			log.info(f'inp {type(inp)}: {inp}')
+			#log.info(f'inp {type(inp)}: {inp}')
 			sorted = fr_db.helper_sort_dict_by_value(inp['key'], inp["current_data"])
-			temp = render_template("manage_db_data_list_macro.html", data_to_display = sorted)
+			template = render_template("manage_db_data_list_macro.html", data_to_display = sorted)
 		
-			return json.dumps({'success':True, 'response': temp}), 200, {'ContentType':'application/json'}
+			return json.dumps({'success':True, 'response': [template, sorted]}), 200, {'ContentType':'application/json'}
 		#print(data)
 
 		if 'search_db' in data.keys():
 			inp = json.loads(data["search_db"])
 			log.info(f'inp {type(inp)}: {inp}')
-			
+			searched = "" #fr_db.load_db_search_category()
+			template = render_template("manage_db_data_list_macro.html", data_to_display = searched)
+			return json.dumps({'success':True, 'response': [template, searched]}), 200, {'ContentType':'application/json'}
 
 	return render_template('manage_db.html', data_to_display = db_entrys_to_display, kategories = fr_db.get_db_keys())
 

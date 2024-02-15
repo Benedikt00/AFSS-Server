@@ -3,7 +3,7 @@
 <tr>
     {% for key in data_to_display[0]%}
         <th><p>{{key}}</p>
-        <button onclick="sort_for_key('{{key}}', {{data_to_display}})">&#9660;</button>
+        <button onclick="sort_for_key('{{key}}')">&#9660;</button>
         </th>
     {% endfor %}
 </tr>

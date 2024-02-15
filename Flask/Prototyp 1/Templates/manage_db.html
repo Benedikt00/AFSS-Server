@@ -18,10 +18,11 @@
     <div id="search_keys">
     {% for key in kategories %}
     {% if key not in ['Bauteilanzahl', 'Bauteilanzahl_min', 'Gewicht_pro_teil_in_g', 'eingelagert', 'ausgelagert', 'wird_eingelagert', 'wird_ausgelagert', 'anzahl_auslagerungen'] %}
-        <div class="kategory_search_div">
+        <form class="kategory_search_div" onSubmit="searchFormSubmit(event, '{{ key }}')">
         <p>{{key}}</p>
-        <input class="inp_key" onSubmit="search_entries({{key}}, {{data_to_display}})">
-        </div>
+        <input type="text" class="inp_key">
+        {# <input type="submit" value="Suchen.."> #}
+        </form>
         
     {% else %}
     {% endif %}
@@ -40,15 +41,22 @@
 </body>
 
 <script>
-function search_entries(category, searchtherm){
-    console.log("asdfasdd")
+
+data_to_display = JSON.parse(("{{data_to_display}}").replaceAll("&#39;", "\"").replaceAll("&#34;", "'"))
+
+function searchFormSubmit(event, key) {
+    // Prevent the default form submission behavior
+    event.preventDefault();
+    // Access the input value for the specific form
+    var searchtherm = event.target.querySelector('.inp_key').value;
+    
     var xhr = new XMLHttpRequest();
     xhr.open('post', '/manage_db', true);
-    // Set up the callback function for when the request completes
 
     var formData = new FormData();
     // Add the selected data to the FormData object
-    formData.append('search_db', JSON.stringify({ "category": category, "searchtherm": searchtherm }));
+    formData.append('search_db', JSON.stringify({ "category": key, "searchtherm": searchtherm
+    }));
 
 
     xhr.onload = function () {
@@ -56,9 +64,9 @@ function search_entries(category, searchtherm){
             // Handle the successful response here
             console.log('Form submitted successfully');
                 console.log(xhr.response)
-                {# document.open();
-                document.write(xhr.response);
-                document.close(); #}
+                ajax_rep = JSON.parse(xhr.response)['response']
+                document.getElementById('db_e_macro').innerHTML = ajax_rep[0]
+                data_to_display = ajax_rep[1]
         } else {
             // Handle errors or other statuses
             console.error('Form submission failed');
@@ -67,18 +75,20 @@ function search_entries(category, searchtherm){
 
     // Send the FormData object with the request
     xhr.send(formData);
-}
 
-function sort_for_key(key, data){
+    }
+
+
+
+function sort_for_key(key){
     console.log(key)
-    console.log(data)
     var xhr = new XMLHttpRequest();
     xhr.open('post', '/manage_db', true);
     // Set up the callback function for when the request completes
 
     var formData = new FormData();
     // Add the selected data to the FormData object
-    formData.append('sort_db_entrys', JSON.stringify({ "key": key, "current_data": data }));
+    formData.append('sort_db_entrys', JSON.stringify({ "key": key, "current_data": data_to_display }));
 
 
     xhr.onload = function () {
@@ -86,7 +96,9 @@ function sort_for_key(key, data){
             // Handle the successful response here
             console.log('Form submitted successfully');
             ajax_rep = JSON.parse(xhr.response)['response']
-            document.getElementById('db_e_macro').innerHTML = ajax_rep
+            document.getElementById('db_e_macro').innerHTML = ajax_rep[0]
+            data_to_display = ajax_rep[1]
+            //console.log(ajax_rep)
         } else {
             // Handle errors or other statuses
             console.error('Form submission failed');
@@ -95,6 +107,8 @@ function sort_for_key(key, data){
 
     // Send the FormData object with the request
     xhr.send(formData);
+
+    
 }
 
 </script>

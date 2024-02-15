@@ -31,7 +31,7 @@
     {% endfor%}
     {% endif %}
 
-    <div id="popup" class="popup">
+    <dialog id="popup" class="popup">
         <div class="popup-content" id="popup-content">
             <!-- Your content goes here -->
             <p id="pop_entry">This is your popup content.</p>
@@ -44,7 +44,7 @@
                 onClick="set_db_val({{db_entry[0]}}, document.getElementById('pop_cat').innerText)">Submit</button>
             <button id="closePopup" onClick="closePopup()">Close</button>
         </div>
-    </div>
+    </dialog>
 
 
 </body>
@@ -92,13 +92,13 @@
 
     function openPopup() {
         var popup = document.getElementById('popup');
-        popup.style.display = 'flex';
+        popup.showModal();
     }
 
     function closePopup() {
         var popup = document.getElementById('popup');
         document.getElementById('new_val_inp').value = ""
-        popup.style.display = 'none';
+        popup.close();
         
         //for the updated data
         window.location.replace(window.location.href)
