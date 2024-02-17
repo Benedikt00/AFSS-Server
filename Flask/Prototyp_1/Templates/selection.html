@@ -22,21 +22,25 @@
         
         
     </div>
-
-    <div id="db_responses">
-        {% for entry in db_entrys_from_keys %}
-        <div class="db_entry">
-            <p>{{entry['id']}}</p>
-            <p>{{entry['Bauteilname']}}</p>
-            <p>{{entry['Platz']}}</p>
-            <p style="width: 30%;">{{entry['Kategorisierungen']}}</p>
-            <p>{{entry['Anzahl']}}</p>
-            <input type="button" value="Bestellen" onclick="handle_order({{entry}})"> 
-            
-        </div>
-        <hr style="width: 95%;">
-        {% endfor %}
+    <div class="div_db_responses">
+        <table id="db_responses">
+            {% for entry in db_entrys_from_keys %}
+            <tr>
+    
+                <td><p>{{entry['id']}}</p></td>
+                <td><p>{{entry['Bauteilname']}}</p></td>
+                <td><p>{{entry['Platz']}}</p></td>
+                <td><p>{{entry['Kategorisierungen']}}</p></td>
+                <td><p>{{entry['Anzahl']}}</p></td>
+                <td><input type="button" value="Bestellen" onclick="handle_order({{entry}})"></td>
+                <td><button onclick="window.location.href=`/manage_db/{{entry['id']}}`" title="Edit entry">&#x2807;</button></td>
+                
+    
+        </tr>
+            {% endfor %}
+        </table>
     </div>
+    
 
         
 </body>

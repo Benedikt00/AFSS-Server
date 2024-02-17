@@ -4,7 +4,7 @@ import re
 
 engine = create_engine("mysql://root:112358@localhost:3306/test_db_bauteile", echo=False)
 
-#TODO: Reformat to object oriented approach
+#DONE: Reformat to object oriented approach 
 
 def res_to_dict(res):	
 	rows_as_dicts = res.mappings().all()
@@ -67,40 +67,7 @@ def get_first_identifier():
 
 	return indentifiers
 
-def process_keys(ls_keys):
 
-	index = -1
-
-	for i, key in enumerate(ls_keys):
-		if key == "":
-			index = i
-			break
-	
-	if index == -1:
-		return ls_keys
-
-	keys_gotten = []
-	for key in ls_keys:
-		if key != "":
-			keys_gotten.append(key)
-	keys_gotten_for_sql = str(keys_gotten).replace("'", "\"")
-	with engine.connect() as conn:
-		query = f"SELECT * FROM db_factory_p1 WHERE JSON_CONTAINS(Kategorisierungen, '{keys_gotten_for_sql}');"
-		result = conn.execute(text(query))
-
-	list_dict_res = result.mappings().all()
-
-	#get new ids
-
-	new_ids = []
-
-	for el in list_dict_res:
-		list_keys = json.loads(el['Kategorisierungen'])
-		if list_keys[index] not in new_ids:
-			new_ids.append(list_keys[index])
-
-
-	return [new_ids, index]
 
 
 def get_db_entys_from_keys(ls_keys):

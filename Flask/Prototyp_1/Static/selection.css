@@ -44,31 +44,20 @@
     
 }
 
-#db_responses{
-    height: 400px;
-    width: 80%;
-    margin: 10% auto 0 auto;
+.div_db_responses{
+    max-height: 50vh;
     overflow-y: scroll;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+    margin: 10% 10% 0 10%;
 }
 
+#db_responses{
+    width: 80%;
+    
+    
 
-.db_entry p {
-    min-width: 10%;
-    align-items: center;
 }
 
-.db_entry {
-    display: flex;
-    width: 100%; 
-    box-sizing: border-box;
-    padding: 10px; 
-    justify-content: space-around; 
-}
-
-.db_entry input {
+#db_responses input {
     height: 60%;
     margin: auto 0;
     background-color: #302f2f;
@@ -79,4 +68,20 @@
     cursor: pointer;
     text-align: center;
     text-decoration: none;
+}
+
+#db_responses button{
+    font-size: 18px;
+    color: white;
+    background-color: transparent;
+    cursor: pointer;
+    border: none;
+    outline: none;
+    text-align: center;
+    
+}
+
+#db_responses button:hover{
+    background: rgb(255,255,255);
+background: radial-gradient(circle, rgba(122, 122, 122, 0.9) 0%, rgba(66, 66, 66, 0) 60%);
 }
