@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Einkaufswagen</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='cart.css') }}">
+    <style>
+        
+    </style>
+</head>
+
+<body>
+    <!-- Include your navigation template if needed -->
+    {% include "nav_template.html" %}
+    <div id="cart">
+        {% include "cart_table.html" %}
+    </div>
+    
+
+
+    <script>
+        var draggedRow;
+
+        last_op = [0, 0]
+        i = 0
+        function start(event) {
+            // Set the dragged row when drag starts
+            draggedRow = event.target.parentNode;
+        }
+
+        function arrayEquals(a, b) {
+            return Array.isArray(a) &&
+                Array.isArray(b) &&
+                a.length === b.length &&
+                a.every((val, index) => val === b[index]);
+        }
+
+        var row;
+        function start() {
+            row = event.target;
+        }
+        function dragover() {
+            var e = event;
+            e.preventDefault();
+
+
+            let children = Array.from(e.target.parentNode.parentNode.children);
+
+            ac_index = parseInt(children.indexOf(e.target.parentNode))
+            new_index = parseInt(children.indexOf(row))
+
+            new_op = [ac_index, new_index]
+            if (!arrayEquals(new_op, last_op)) {
+                //console.log("Inside if:", new_op, last_op);
+                try {
+                    if (ac_index > new_index) {
+                        e.target.parentNode.after(row);
+                    }
+                    else {
+                        e.target.parentNode.before(row);
+                    }
+                }
+                catch (error) {
+                    //console.log(error)
+                }
+
+
+
+            }
+
+
+            last_op = new_op
+        }
+
+        function drop_el(event, id) {
+            var el = event.currentTarget;
+            while (el && el.nodeName !== "TR") {
+                el = el.parentNode;
+            }
+            console.log(el && el.rowIndex + " " + id);
+
+
+            var xhr = new XMLHttpRequest();
+            xhr.open('post', '{{ url_for("main.cart")}}', true);
+            
+            var formData = new FormData();
+            formData.append('change_cart', JSON.stringify({ "id": id, "new_index": el && el.rowIndex}));
+            xhr.onload = function () {
+                if (xhr.status === 200) {
+                    console.log('Form submitted successfully');
+                    document.getElementById("cart").innerHTML = xhr.response
+                } else {
+                    console.error('Form submission failed');
+                }
+            };
+            xhr.send(formData);
+
+        }
+
+    function reset_cart(){
+        var xhr = new XMLHttpRequest();
+            xhr.open('post', '{{ url_for("main.cart")}}', true);
+            
+            var formData = new FormData();
+            formData.append('reset_cart', JSON.stringify({}));
+            xhr.onload = function () {
+                if (xhr.status === 200) {
+                    console.log('Form submitted successfully');
+                } else {
+                    console.error('Form submission failed');
+                }
+            };
+            xhr.send(formData);
+    }
+
+
+    </script>
+</body>
+
+</html>

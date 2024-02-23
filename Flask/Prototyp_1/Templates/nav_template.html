@@ -2,10 +2,13 @@
     <ul>
         <li><p id="logo">AFSS</p></li>
         <li><a href="/">Home</a></li>
-        <li><a href="/selection">Bestellungen</a></li>
-        <li><a href="/manage_db">Datenbank Verwalten</a></li>
-        <li><a href="/new_entry">Bauteil hinzufügen</a></li>
+        <li><a href="{{ url_for('main.selection') }}">Bestellungen</a></li>
+        <li><a href="{{ url_for('main.manage_db') }}">Datenbank Verwalten</a></li>
+        <li><a href="{{ url_for('main.new_entry') }}">Bauteil hinzufügen</a></li>
+        <li><a href="{{ url_for('main.cart') }}">Einkaufswagen</a></li>
+        <li id="login"><a href="{{ url_for('main.login') }}">Login</a></li>
         <!-- Add more items as needed -->
+        {# <li><a href="{{ url_for('') }}"></a></li> #}
     </ul>
 </nav>
 <style>
@@ -31,7 +34,7 @@ nav {
     color: #fff;
     display: flex;
     align-items: center;
-    
+    width: 100%;
 }
 
 .logo {
@@ -40,6 +43,8 @@ nav {
 
 ul {
     display: flex;
+    width: 100%;
+    padding: 0 5vw;
 }
 
 li {
@@ -65,4 +70,10 @@ a:hover {
 #logo {
     font-family: ethnocentric;
 }
+
+#login{
+    margin-left: auto;
+    
+}
+
 </style>

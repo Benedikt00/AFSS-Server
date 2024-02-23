@@ -1,0 +1,25 @@
+<table>
+    Cart
+    <thead>
+        <tr draggable="false">
+            <th>ID</th>
+            <th>Sort</th>
+            <th>Artikelnummer</th>
+            <th>Menge</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for element in data %}
+        <tr draggable='true' ondragstart='start(event)' ondragover='dragover(event)'
+            ondrop="drop_el(event, id={{element['id']}})">
+
+            <td>{{ element["id"] }}</td>
+            <td>{{ element["id_sort"] }}</td>
+            <td>{{ element["part_id"] }}</td>
+            <td>{{ element["quantity"] }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+    <button onClick="reset_cart()">Reset Cart</button>
+
+</table>

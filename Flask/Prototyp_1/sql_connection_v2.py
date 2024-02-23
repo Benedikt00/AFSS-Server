@@ -11,7 +11,7 @@ log.basicConfig(
 
 class Database(object):
     def __init__(self, db_adress, table):
-        self.engine = create_engine(db_adress, echo=False)
+        self.engine = create_engine(db_adress, echo=True)
         self.table_name = table
         self.nf_keys = "Kategorisierungen" # name for keys
         self.max_db_rows = 100
@@ -29,10 +29,17 @@ class Database(object):
             results_dicts = None
         return results_dicts
 
-    def execute_query(self, query) -> list[dict]:
+    def execute_query(self, query, no_return = False, commit = False) -> list[dict]:
         with self.engine.connect() as conn:
             result = conn.execute(text(query))
-        return self.res_to_dict(result)
+            if commit:
+                conn.commit()
+            
+        if not no_return:
+            return self.res_to_dict(result)
+        else:
+            return
+    
 
     def load_db_all(self) -> list[dict]:
         result = self.execute_query(f"SELECT * FROM {self.table_name} LIMIT {self.max_db_rows}")
@@ -217,6 +224,47 @@ class Database(object):
         query = f"SELECT * FROM {self.table_name} WHERE JSON_CONTAINS({self.nf_keys}, '{keys_gotten_for_sql}');"
 
         return self.execute_query(query)
+    
+    def edit_db_entry_after_cat(self, id, category, new):
+
+        type_of_inp = "string"
+        query = f"SHOW COLUMNS FROM {self.table_name} WHERE FIELD = '{category}';"
+        res_clean = self.execute_query(query)
+        
+        type = res_clean[0]['Type']
+
+        #handle different types
+
+        #string 
+        if new == "":
+            return ""
+
+        match = re.search(r'\((\d+)\)', type)
+        if match:
+            length = int(match.group(1))
+
+            if type_of_inp == "string" and len(new) <= length:
+                try:
+                    query = f"UPDATE {self.table_name} SET {category} = '{new}' WHERE id = {id};"
+                    self.execute_query(query, no_return=True, commit=True)
+                except:
+                    return "Errror handeling this Request"
+                return "It might have worked"
+            else:
+                return "String too long"
+
+        if (type == "int") and new.isnumeric():
+            try:
+                query = f"UPDATE {self.table_name} SET {category} = '{new}' WHERE id = {id};"
+                self.execute_query(query, no_return=True, commit=True)
+                return "It might have worked"
+            except Exception as e:
+                log.info(e)
+                return "Errror handeling this Request"
+            
+        
+        return "Type is unnacounted for"
+    
 
 
 class TestDatabase(unittest.TestCase):
