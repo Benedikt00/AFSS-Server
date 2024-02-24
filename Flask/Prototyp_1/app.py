@@ -27,24 +27,31 @@ from flask_login import (
 )
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField, IntegerField
-from wtforms.validators import InputRequired, Length, ValidationError
-from flask_bcrypt import Bcrypt
+from wtforms.validators import InputRequired, Length, ValidationError, NumberRange
+
 
 from extensions import db as db_flask
 from extensions import login_manager
+from extensions import bcrypt
 from models import Users, Cart, Parts
+
+from configurations import config
+
+from time import sleep
+
+project_config = config("config.ini")
+
+print(project_config.get_option('Settings','max_num_boxes'))
 
 
 fr_db = Database("mysql://root:112358@localhost:3306/test_db_bauteile", "db_factory_p1")
+
 
 
 # db_flask = SQLAlchemy(app)
 
 
 main = Blueprint("main", __name__)
-
-
-
 
 @login_manager.user_loader
 def load_user(name):
@@ -297,7 +304,7 @@ def login():
 
                 login_user(user)
                 session["access"] = user.access
-                return redirect(url_for("root"))
+                return redirect(url_for("main.root"))
     return render_template("login.html", form=form)
 
 
@@ -343,6 +350,11 @@ def register():
 
     return render_template("register.html", form=form)
 
+@main.route('/logout')
+@login_required
+def logout():
+    session.pop('access', None)
+    return redirect(url_for('main.root'))
 
 def load_cart_data():
     cart_data = Cart.query.all()
@@ -361,6 +373,8 @@ def load_cart_data():
 
     return sorted(result, key=lambda x: x["id_sort"])
 
+def add_orders_to_stack(max_out):
+    pass
 
 def move_element_with_new_id_sort(part_id_param: int, new_id_sort: int):
     """moves an element to a new position, updates the indeces of the oder elements
@@ -371,32 +385,27 @@ def move_element_with_new_id_sort(part_id_param: int, new_id_sort: int):
     Return: none
     """
     
-    id_sort = "id_sort"
-    table = "Cart"
-    part_id = "part_id"
-
-    # Using f-strings to construct SQL queries
+    orig_id_sort = Cart.query.filter_by(id = part_id_param).first().id_sort
     
-    #TODO: sleep
+    diff = new_id_sort - orig_id_sort
+    log.info(f'diff {type(diff)}: {diff}')
 
-    db_flask.session.execute(
-        text(
-            f"UPDATE {table} SET {id_sort} = {id_sort} + 1 WHERE {part_id} != {part_id_param} AND {id_sort} > {new_id_sort}"
-        )
-    )
-    db_flask.session.execute(
-        text(
-            f"UPDATE {table} SET {id_sort} = {id_sort} - 1 WHERE {part_id} != {part_id_param} AND {id_sort} < {new_id_sort}"
-        )
-    )
-    db_flask.session.execute(
-        text(
-            f"UPDATE {table} SET {id_sort} = {new_id_sort} WHERE {part_id} = {part_id_param} "
-        )
-    )
-
-    # Commit the transaction
+    if diff > 0:
+        log.info("pos")
+        Cart.query.filter(Cart.id_sort == orig_id_sort).update({Cart.id_sort: (-1)})
+        Cart.query.filter(Cart.id_sort.between(orig_id_sort, new_id_sort)).\
+                update({Cart.id_sort: Cart.id_sort - 1}, synchronize_session=False)
+        Cart.query.filter(Cart.id_sort == -1).update({Cart.id_sort: new_id_sort})
+    
+    if diff < 0:
+        log.info("neg")
+        Cart.query.filter(Cart.id_sort == orig_id_sort).update({Cart.id_sort: (-1)})
+        Cart.query.filter(Cart.id_sort.between(new_id_sort, orig_id_sort)).\
+                update({Cart.id_sort: Cart.id_sort + 1}, synchronize_session=False)
+        Cart.query.filter(Cart.id_sort == -1).update({Cart.id_sort: new_id_sort})
+    
     db_flask.session.commit()
+
 
 def reset_cart_and_autoincrement():
     # Function to delete all data from the Cart table and reset the auto-increment counter
@@ -404,9 +413,29 @@ def reset_cart_and_autoincrement():
     db_flask.session.execute(text("ALTER TABLE cart AUTO_INCREMENT = 0"))
     db_flask.session.commit()
 
+def change_quantity(id, new_val):
+    Cart.query.filter(Cart.id == id).update({Cart.quantity: new_val})
+    db_flask.session.commit()
+
+def delete_item(id):
+    element_to_delete = Cart.query.get(id)
+    if element_to_delete:
+            beg_sort_id = element_to_delete.id_sort
+            db_flask.session.delete(element_to_delete)
+            Cart.query.filter(Cart.id_sort > beg_sort_id).\
+                update({Cart.id_sort: Cart.id_sort - 1})
+            
+            db_flask.session.commit()
+
+class OrderSubmitFiled(FlaskForm):
+    num_box_max = IntegerField('num_max_box', validators=[
+        NumberRange(min=1, max=project_config.get_option('Settings','max_num_boxes'), message='Value must be between 0 and 100')
+    ], default=5)
+    submit_button = SubmitField('Submit')
 
 @main.route("/cart", methods=["GET", "POST"])
 def cart():
+    form = OrderSubmitFiled()
     if request.method == "POST":
 
         data = request.form.to_dict()
@@ -420,12 +449,25 @@ def cart():
             log.info("resetting cart")
             reset_cart_and_autoincrement()
 
+        if "change_quant" in data.keys():
+            id = json.loads(data["change_quant"])["id"]
+            new_val = json.loads(data["change_quant"])["new_quant"]
+            change_quantity(id, new_val)
+        
+        if "delete_item" in data.keys():
+            id = json.loads(data["delete_item"])["id"]
+            delete_item(id)
+
+        if form.validate_on_submit():
+            max_out = form.num_box_max.data
+            add_orders_to_stack(max_out)
+
         data = load_cart_data()
 
         return render_template("cart_table.html", data=data)
 
     data = load_cart_data()
-    return render_template("cart.html", data=data)
+    return render_template("cart.html", data=data, OrderSubmitFiled = form)
 
 
 @main.errorhandler(404)

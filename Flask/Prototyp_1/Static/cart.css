@@ -34,3 +34,12 @@ tr:nth-child(even) {
     background-color: #929292;
     /* Adjust color as needed */
 }
+
+.quant_inp{
+    max-width: 30px;
+}
+
+.delete_btn{
+    background-color: transparent;
+    border: 0;
+}

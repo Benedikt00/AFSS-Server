@@ -6,11 +6,20 @@
         <li><a href="{{ url_for('main.manage_db') }}">Datenbank Verwalten</a></li>
         <li><a href="{{ url_for('main.new_entry') }}">Bauteil hinzufügen</a></li>
         <li><a href="{{ url_for('main.cart') }}">Einkaufswagen</a></li>
+        {% if not session['access'] %}
         <li id="login"><a href="{{ url_for('main.login') }}">Login</a></li>
+        {% else %}
+            <li id="login"><a href="{{ url_for('main.logout') }}">Logout</a></li>
+        {% endif %}
+        
+        
         <!-- Add more items as needed -->
         {# <li><a href="{{ url_for('') }}"></a></li> #}
     </ul>
 </nav>
+<script>
+
+</script>
 <style>
 
 body{

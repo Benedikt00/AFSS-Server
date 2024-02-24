@@ -7,7 +7,7 @@
     <title>Einkaufswagen</title>
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='cart.css') }}">
     <style>
-        
+
     </style>
 </head>
 
@@ -17,7 +17,17 @@
     <div id="cart">
         {% include "cart_table.html" %}
     </div>
+    {% if data %}
+        <form method="POST">
+        <p>Maximale Auslagerung Gleichzeitig: </p>{{ OrderSubmitFiled.num_box_max() }}
+        {{ OrderSubmitFiled.submit_button() }}
+    </form>
+    {% else %}
+        <p>Ihr Einkaufswagen ist Leer</p>
+    {% endif %}
     
+    
+
 
 
     <script>
@@ -41,6 +51,8 @@
         function start() {
             row = event.target;
         }
+
+
         function dragover() {
             var e = event;
             e.preventDefault();
@@ -65,14 +77,38 @@
                 catch (error) {
                     //console.log(error)
                 }
-
-
-
             }
-
-
             last_op = new_op
         }
+
+        function send_xhr(header, content, callback) {
+            var xhr = new XMLHttpRequest();
+            xhr.open('post', '{{ url_for("main.cart")}}', true);
+
+            var formData = new FormData();
+            formData.append(header, content);
+
+            xhr.onload = function () {
+                if (xhr.status === 200) {
+                    console.log('Form submitted successfully');
+                    // Call the callback function with the response
+                    callback(xhr.response);
+                } else {
+                    console.error('Form submission failed');
+                    // Call the callback function with an error flag
+                    callback(null, 'Form submission failed');
+                }
+            };
+
+            xhr.onerror = function () {
+                console.error('Request failed');
+                // Call the callback function with an error flag
+                callback(null, 'Request failed');
+            };
+
+            xhr.send(formData);
+        }
+
 
         function drop_el(event, id) {
             var el = event.currentTarget;
@@ -81,40 +117,47 @@
             }
             console.log(el && el.rowIndex + " " + id);
 
-
-            var xhr = new XMLHttpRequest();
-            xhr.open('post', '{{ url_for("main.cart")}}', true);
-            
-            var formData = new FormData();
-            formData.append('change_cart', JSON.stringify({ "id": id, "new_index": el && el.rowIndex}));
-            xhr.onload = function () {
-                if (xhr.status === 200) {
-                    console.log('Form submitted successfully');
-                    document.getElementById("cart").innerHTML = xhr.response
-                } else {
-                    console.error('Form submission failed');
-                }
-            };
-            xhr.send(formData);
+            send_xhr('change_cart', JSON.stringify({ "id": id, "new_index": el && el.rowIndex })
+                , function (response, error) {
+                    if (response !== null) {
+                        // Use the response variable here
+                        document.getElementById("cart").innerHTML = response
+                    } else {
+                        // Handle the error
+                        console.error('Error:', error);
+                    }
+                });
 
         }
 
-    function reset_cart(){
-        var xhr = new XMLHttpRequest();
-            xhr.open('post', '{{ url_for("main.cart")}}', true);
-            
-            var formData = new FormData();
-            formData.append('reset_cart', JSON.stringify({}));
-            xhr.onload = function () {
-                if (xhr.status === 200) {
-                    console.log('Form submitted successfully');
-                } else {
-                    console.error('Form submission failed');
-                }
-            };
-            xhr.send(formData);
-    }
+        function reset_cart() {
+            send_xhr('reset_cart', JSON.stringify({})
+                , function (response, error) {
+                    if (response !== null) { document.getElementById("cart").innerHTML = response // probably no reload necassary
+                    } else { console.error('Error:', error); };
+                })
 
+        }
+        function change_quant(id, val) {
+            console.log(id)
+            console.log(val)
+            send_xhr('change_quant', JSON.stringify({ "id": id, "new_quant": val })
+                , function (response, error) {
+                    if (response !== null) {
+                        //console.log(response)
+                        // inner html does not need to be reloaded, save processing time
+                    } else { console.error('Error:', error); };
+                })
+        }
+
+        function delete_item(id){
+            send_xhr('delete_item', JSON.stringify({ "id": id})
+                , function (response, error) {
+                    if (response !== null) {
+                        document.getElementById("cart").innerHTML = response
+                    } else { console.error('Error:', error); };
+                })
+        }
 
     </script>
 </body>

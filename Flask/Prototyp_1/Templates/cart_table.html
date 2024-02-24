@@ -6,6 +6,7 @@
             <th>Sort</th>
             <th>Artikelnummer</th>
             <th>Menge</th>
+            <th><button onClick="reset_cart()">Reset Cart</button></th>
         </tr>
     </thead>
     <tbody>
@@ -16,10 +17,11 @@
             <td>{{ element["id"] }}</td>
             <td>{{ element["id_sort"] }}</td>
             <td>{{ element["part_id"] }}</td>
-            <td>{{ element["quantity"] }}</td>
+            <td><input class="quant_inp" onChange="change_quant({{element['id']}}, this.value)" type = "number" min="1" value="{{ element['quantity'] }}"></td>
+            <td><button class="delete_btn" onClick="delete_item({{element['id']}})"><b>&#128465;</b></button></td>
         </tr>
         {% endfor %}
     </tbody>
-    <button onClick="reset_cart()">Reset Cart</button>
+    
 
 </table>
