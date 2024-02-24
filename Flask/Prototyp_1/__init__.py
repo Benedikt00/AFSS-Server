@@ -2,6 +2,7 @@ from flask import Flask
 
 from extensions import db, login_manager, bcrypt
 from app import main
+import asyncio
 
 def create_app(database_uri="sqlite:///db.sqlite3"):
     app = Flask(__name__)
@@ -10,15 +11,15 @@ def create_app(database_uri="sqlite:///db.sqlite3"):
     db.init_app(app)
     login_manager.init_app(app)
     bcrypt.init_app(app)
-    app.register_blueprint(main)
-
-    
+    app.register_blueprint(main)    
 
     login_manager.init_app(app)
     login_manager.login_view = "login"
+    
 
     return app
 
 if __name__ == "__main__":
     app = create_app()
     app.run(debug=True)
+    

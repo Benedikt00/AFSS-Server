@@ -279,7 +279,6 @@ class TestDatabase(unittest.TestCase):
     def test_load_db_all(self):
         data = self.db.load_db_all()
         self.assertIsInstance(data, list)
-        
 
     # Add more test cases for other methods as needed
 

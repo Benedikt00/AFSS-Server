@@ -47,7 +47,6 @@ print(project_config.get_option('Settings','max_num_boxes'))
 fr_db = Database("mysql://root:112358@localhost:3306/test_db_bauteile", "db_factory_p1")
 
 
-
 # db_flask = SQLAlchemy(app)
 
 
@@ -374,6 +373,9 @@ def load_cart_data():
     return sorted(result, key=lambda x: x["id_sort"])
 
 def add_orders_to_stack(max_out):
+    
+    
+
     pass
 
 def move_element_with_new_id_sort(part_id_param: int, new_id_sort: int):
@@ -405,7 +407,6 @@ def move_element_with_new_id_sort(part_id_param: int, new_id_sort: int):
         Cart.query.filter(Cart.id_sort == -1).update({Cart.id_sort: new_id_sort})
     
     db_flask.session.commit()
-
 
 def reset_cart_and_autoincrement():
     # Function to delete all data from the Cart table and reset the auto-increment counter
