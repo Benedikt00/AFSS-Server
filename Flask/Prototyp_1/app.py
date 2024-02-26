@@ -15,7 +15,7 @@ from sql_connection_v2 import Database
 
 import logging as log
 
-from sqlalchemy import text, sql, select, exists
+from sqlalchemy import text, sql, select, exists, func
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import (
     UserMixin,
@@ -44,7 +44,7 @@ project_config = config("config.ini")
 print(project_config.get_option('Settings','max_num_boxes'))
 
 
-fr_db = Database("mysql://root:112358@localhost:3306/test_db_bauteile", "db_factory_p1")
+fr_db = Database("mysql://root:112358@localhost:3306/factory_db", "parts")
 
 
 # db_flask = SQLAlchemy(app)
@@ -372,10 +372,55 @@ def load_cart_data():
 
     return sorted(result, key=lambda x: x["id_sort"])
 
-def add_orders_to_stack(max_out):
-    
-    
 
+def get_num_orders_from_stack(stack) -> int:
+    #TODO logic 
+    i = 0
+    for x in stack:
+        if "move" in x.keys():
+            i += 1
+    return i
+
+inst_stack = [{"move": [6, -1]}, {"move": [5, -1]}, {"move": [4, -1]}, {"move": [3, -1]}, {"move": [2, -1]}]
+num_out_ac = 0
+
+def get_first_order():
+    first_id_sort = db_flask.session.query(func.min(Cart.id_sort)).scalar()
+    log.info(f'first_id_sort {type(first_id_sort)}: {first_id_sort}')
+    row = Cart.query.filter_by(id_sort=first_id_sort).first()
+    if first_id_sort is not None:
+        log.info(f'first_id_sort {type(first_id_sort)}: {first_id_sort}')
+
+        el_delete = Cart.query.filter_by(id_sort=first_id_sort).first()
+        
+        if el_delete:
+            log.info(f'el_delete {type(el_delete)}: {el_delete}')
+            db_flask.session.delete(el_delete)
+
+            # Update the id_sort values for records with id_sort greater than first_id_sort
+            Cart.query.filter(Cart.id_sort > first_id_sort).update({Cart.id_sort: Cart.id_sort - 1})
+            
+            db_flask.session.commit()
+        else:
+            log.warning('No record found for deletion.')
+    else:
+        log.warning('No records in the Cart table.')
+        return -1
+
+    return row.part_id
+
+def add_orders_to_stack(max_out):
+    max_out_proj = int(project_config.get_option('Settings','max_num_boxes'))
+    if max_out > max_out_proj:
+        max_out = max_out_proj
+    slots_left = int(project_config.get_option('Settings','max_num_instructions_for_out')) - (get_num_orders_from_stack(inst_stack))
+
+    for i in range(slots_left):
+        new_order = get_first_order()
+        if new_order == -1:
+            break
+        log.info(f'new_order {type(new_order)}: {new_order}')
+        inst_stack.append({"move": [new_order, -1]})
     pass
 
 def move_element_with_new_id_sort(part_id_param: int, new_id_sort: int):
@@ -421,25 +466,34 @@ def change_quantity(id, new_val):
 def delete_item(id):
     element_to_delete = Cart.query.get(id)
     if element_to_delete:
-            beg_sort_id = element_to_delete.id_sort
-            db_flask.session.delete(element_to_delete)
-            Cart.query.filter(Cart.id_sort > beg_sort_id).\
-                update({Cart.id_sort: Cart.id_sort - 1})
-            
-            db_flask.session.commit()
+        beg_sort_id = element_to_delete.id_sort
+        db_flask.session.delete(element_to_delete)
+        Cart.query.filter(Cart.id_sort > beg_sort_id).\
+            update({Cart.id_sort: Cart.id_sort - 1})
+        
+        db_flask.session.commit()
 
 class OrderSubmitFiled(FlaskForm):
     num_box_max = IntegerField('num_max_box', validators=[
-        NumberRange(min=1, max=project_config.get_option('Settings','max_num_boxes'), message='Value must be between 0 and 100')
+        NumberRange(min=1, max=int(project_config.get_option('Settings','max_num_boxes')), message='Value must be between 0 and 100')
     ], default=5)
     submit_button = SubmitField('Submit')
+
 
 @main.route("/cart", methods=["GET", "POST"])
 def cart():
     form = OrderSubmitFiled()
     if request.method == "POST":
-
+        
         data = request.form.to_dict()
+        log.info(f'data {type(data)}: {data}')
+
+        if ("num_box_max" in data.keys()) and ("submit_button" in data.keys()):
+            log.info(f'form {type(form)}: {form}')
+            max_out = form.num_box_max.data
+            add_orders_to_stack(int(max_out))
+            return redirect(url_for("api_instructions_afss"))
+
         if "change_cart" in data.keys():
             part_id = json.loads(data["change_cart"])["id"]
             new_index = json.loads(data["change_cart"])["new_index"]
@@ -458,17 +512,23 @@ def cart():
         if "delete_item" in data.keys():
             id = json.loads(data["delete_item"])["id"]
             delete_item(id)
-
-        if form.validate_on_submit():
-            max_out = form.num_box_max.data
-            add_orders_to_stack(max_out)
-
+        
         data = load_cart_data()
-
         return render_template("cart_table.html", data=data)
+    
+    
+
 
     data = load_cart_data()
     return render_template("cart.html", data=data, OrderSubmitFiled = form)
+
+@main.route("/api/instructions/afss", methods=["GET", "POST"])
+def api_instructions_afss():
+    if request.method == "POST":
+        req = request.form
+        log.info(f'req {type(req)}: {req}')
+        
+    return json.dumps(inst_stack)
 
 
 @main.errorhandler(404)
@@ -479,6 +539,7 @@ def page_not_found(e):
 @main.route("/test")
 def test():
     return render_template("test.html")
+
 
 
 if __name__ == "__main__":
