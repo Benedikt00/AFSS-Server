@@ -1,0 +1,51 @@
+{% extends "base_template.html" %}
+
+{% block title %}Manage Articles{% endblock %}
+{% block head %}
+<link rel="stylesheet" href="{{url_for('static', filename='manage_articles.css')}}">
+{% endblock %}
+
+
+
+{% block content %}
+{% import 'macros_for_manage_articles.html' as macros %}
+<div id="table_for_shit">
+
+    {{ macros.render_article_table(articles) }}
+
+</div>
+
+
+{% endblock %}
+
+{% block js %}
+<script>
+function delete_at(id){
+    to_post = {"delete": id}
+    ret = sendData(to_post)
+    document.getElementById("table_for_shit").innerHTML = ret
+}
+
+function sendData(data) {
+            var xhr = new XMLHttpRequest();
+            var url = "{{url_for('main.edit_articles_db')}}";
+
+            xhr.open("POST", url, true);
+            xhr.setRequestHeader("Content-Type", "application/json");
+
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    // Request was successful, handle response here if needed
+                    console.log(xhr.responseText);
+                    
+                }
+            };
+
+            var jsonData = JSON.stringify(data);
+            xhr.send(jsonData);
+            return xhr.responseText
+        }
+
+</script>
+
+{% endblock %}

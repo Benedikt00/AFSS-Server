@@ -41,8 +41,6 @@ from time import sleep
 
 project_config = config("config.ini")
 
-print(project_config.get_option('Settings','max_num_boxes'))
-
 
 fr_db = Database("mysql://root:112358@localhost:3306/factory_db", "parts")
 
@@ -492,7 +490,7 @@ def cart():
             log.info(f'form {type(form)}: {form}')
             max_out = form.num_box_max.data
             add_orders_to_stack(int(max_out))
-            return redirect(url_for("api_instructions_afss"))
+            return redirect(url_for("main.api_instructions_afss"))
 
         if "change_cart" in data.keys():
             part_id = json.loads(data["change_cart"])["id"]

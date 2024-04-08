@@ -1,0 +1,91 @@
+<nav id="nav_top">
+    <ul>
+        <li><p id="logo">AFSS</p></li>
+        <li><a href="/">Home</a></li>
+        <li><a href="{{ url_for('main.storage_templates') }}">AFSS Templates</a></li>
+        <li><a href="{{ url_for('main.new_article') }}">Articles</a></li>
+        <li><a href="{{ url_for('main.manage_db') }}">DB-management</a></li>
+
+        {#{% if not session['access'] %}
+        <li id="login"><a href="{{ url_for('main.login') }}">Login</a></li>
+        {% else %}
+            <li id="login"><a href="{{ url_for('main.logout') }}">Logout</a></li>
+        {% endif %} #}
+        
+        
+        <!-- Add more items as needed -->
+        {# <li><a href="{{ url_for('') }}"></a></li> #}
+    </ul>
+</nav>
+<script>
+
+</script>
+<style>
+
+body{
+    margin: 0;
+    padding: 0;
+    
+    background-color: #302f2f;
+    color: #f1f1f1;
+
+}
+    #nav_top, ul, li, a {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    text-decoration: none;
+}
+
+/* Navbar styling */
+#nav_top {
+    background-color: #333;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.logo {
+    margin-right: auto; /* Pushes the logo to the left corner */
+}
+
+#nav_top ul {
+    display: flex;
+    width: 100%;
+    padding: 0 5vw;
+}
+
+#nav_top li {
+    margin: 0 10px;
+    height: auto;
+    display: flex;
+    align-items: center;
+    padding: 0 10px;
+
+}
+
+#nav_top a {
+    color: #fff;
+    transition: background-color 0.3s ease;
+    font-weight: bold;
+    font-family: Arial;
+
+}
+
+#nav_top li:hover {
+    background: rgb(139,139,139);
+    background: linear-gradient(0deg, rgba(100, 100, 100, 0.9) 0%, rgba(75, 75, 75, 0.671) 75%);
+    border-radius: 10px;
+}
+
+#nav_top #logo {
+    font-family: ethnocentric;
+}
+
+#nav_top #login{
+    margin-left: auto;
+    
+}
+
+</style>

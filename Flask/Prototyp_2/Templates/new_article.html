@@ -1,0 +1,50 @@
+{% extends "base_template.html" %}
+
+{% block title %}Stock{% endblock %}
+
+
+{% block content %}
+
+<div id="new_stock">
+<form method="POST" action="{{url_for('main.new_article')}}" enctype="multipart/form-data">
+    {{ article_form.hidden_tag() }}
+    <p>Artikel Name</p>
+    {{ article_form.article_name }}
+
+    <p>Artikel Beschreibung</p>
+    {{ article_form.article_description }}
+
+    <p>Artikel Category</p>
+    {{ article_form.category }}
+    
+    <p>Artikel Gruppe</p>
+    {{ article_form.groupes }}
+
+    <p>Artikel Gewicht in gramm</p>
+    {{ article_form.weight }}
+
+    <p>Artikel Foto</p>
+    <input type = "file" name = "picture" accept=".png, .jpg, .jpeg, .webp"/>
+
+    {{ article_form.submit }}
+
+</form>
+<div id="message">
+{% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <ul>
+                {% for message in messages %}
+                    <li>{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    {% endwith %}
+</div>
+</div>
+
+<div id="db_area">
+    
+</div>
+
+
+{% endblock %}

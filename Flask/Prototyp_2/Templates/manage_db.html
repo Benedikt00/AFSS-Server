@@ -1,0 +1,14 @@
+{% extends "base_template.html" %}
+
+{% block title %}DB-Management{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{{url_for('static', filename='manage_db.css')}}">
+{% endblock %}
+
+{% block content %}
+
+<div class="single_db" onclick="location.href='{{url_for('main.edit_articles_db')}}';"><p>Articles</p></div>
+
+
+{% endblock %}

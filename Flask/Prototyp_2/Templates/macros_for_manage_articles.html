@@ -1,0 +1,16 @@
+{% macro render_article_table(articles) %}
+    <table id="article_table">
+        {% for article in articles %}
+            <tr>
+                <th><img src="{{ url_for('static', filename = 'product_pictures/' + article.picture)}}"></th>
+                <th>{{ article.id }}</th>
+                <th>{{ article.article_name }}</th>
+                <th>{{ article.article_description }}</th>
+                <th>{{ article.groupes }}</th>
+                <th>{{ article.category }}</th>
+                <th>{{ article.weight }}</th>
+                <th><button onclick="delete_at({{ article.id }})">&#128465;</button></th>
+            </tr>
+        {% endfor %}
+    </table>
+{% endmacro %}

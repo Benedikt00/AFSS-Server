@@ -10,4 +10,6 @@ COPY config.ini config.ini
 
 RUN pip install -r requirements.txt
 
+EXPOSE 5000
+
 CMD [ "python", "Prototyp_1/__init__.py" ]
