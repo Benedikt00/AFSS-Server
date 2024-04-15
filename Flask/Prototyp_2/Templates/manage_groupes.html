@@ -1,0 +1,20 @@
+{% extends "base_template.html" %}
+
+{% block title %}
+Manage Groupes
+{% endblock title %}
+
+{% block head %}
+
+{% endblock head %}
+
+{% block content %}
+
+{% import "macros_for_manage_groupes.html" as macros %}
+
+<div id="gps">
+{{ macros.render_prim_groupes_table(prim_groupes) }}
+
+</div>
+
+{% endblock content %}

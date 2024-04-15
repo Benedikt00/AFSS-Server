@@ -12,7 +12,7 @@ class Article(db.Model):
     category = db.Column(db.String(20))
     groupes = db.Column(db.String(50))
     weight = db.Column(db.Integer)
-    picture = db.Column(db.String(30))
+    picture = db.Column(db.String(100))
 
 class Area(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -46,3 +46,20 @@ class Stock(db.Model):
     quantity = db.Column(db.Integer)
     container_rel = db.relationship('Container', backref=db.backref('stock', lazy=True))
     article_rel = db.relationship('Article', backref=db.backref('stock', lazy=True))
+
+class Categories(db.Model):
+    title = db.Column(db.String(50), primary_key=True)
+    unit = db.Column(db.String(10))
+    prefixes = db.Column(db.JSON)
+    
+
+class PrimaryGroup(db.Model):
+    __tablename__ = 'primary_groupes'
+    title = db.Column(db.String(50), primary_key=True)
+
+class SecondaryGroup(db.Model):
+    __tablename__ = 'seondary_groupes'
+    prim_title = db.Column(db.String(50), db.ForeignKey('primary_groupes.title'), primary_key=True)
+    title = db.Column(db.String(50), primary_key=True)
+
+    primary_group = db.relationship('PrimaryGroup', backref='secondary_groups')

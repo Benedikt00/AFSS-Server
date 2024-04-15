@@ -4,47 +4,181 @@
 
 
 {% block content %}
-
+{% import "macros_for_new_articles.html" as macros %}
 <div id="new_stock">
-<form method="POST" action="{{url_for('main.new_article')}}" enctype="multipart/form-data">
-    {{ article_form.hidden_tag() }}
-    <p>Artikel Name</p>
-    {{ article_form.article_name }}
+    <div id="ac_form">
+        <p>Artikel Name</p>
+        <input name="at_name" id="at_name" type="text"/>
 
-    <p>Artikel Beschreibung</p>
-    {{ article_form.article_description }}
+        <p>Artikel Beschreibung</p>
+        <input name="at_description" id="at_description" type="textarea"/>
 
-    <p>Artikel Category</p>
-    {{ article_form.category }}
-    
-    <p>Artikel Gruppe</p>
-    {{ article_form.groupes }}
 
-    <p>Artikel Gewicht in gramm</p>
-    {{ article_form.weight }}
+        <p>Artikel Gewicht in gramm</p>
+        <input name="at_weight" id="at_weight" type="number"/>
 
-    <p>Artikel Foto</p>
-    <input type = "file" name = "picture" accept=".png, .jpg, .jpeg, .webp"/>
 
-    {{ article_form.submit }}
+        <p>Artikel Foto</p>
+        <input type="file" id="at_picture" name="picture" accept=".png, .jpg, .jpeg, .webp" maxlength="30" />
 
-</form>
-<div id="message">
-{% with messages = get_flashed_messages() %}
-        {% if messages %}
-            <ul>
-                {% for message in messages %}
-                    <li>{{ message }}</li>
+        <p>Gruppen</p>
+        <div id="groupes">
+            {{ macros.render_primary_groupes(groupes)}}
+        </div>
+
+        <p>Attribute Hinzufügen</p>
+
+        <div id="categorie">
+            <select name="attribute_select" id="attribute_select" onchange="select_cat(this.value)">
+            <option></option>
+                {% for cat in categories %}
+                <option value="{{cat.title}}">{{cat.title}}</option>
                 {% endfor %}
-            </ul>
+            </select>
+
+            <div id="further_cat">
+                
+            </div>
+            <div id="applied_cats">
+            </div>
+        </div>
+
+        <input onclick="save_article()" type="submit" value="Neuen Artikel Hinzufügen">
+
+    </div>
+    <div id="message">
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+        <ul>
+            {% for message in messages %}
+            <li>{{ message }}</li>
+            {% endfor %}
+        </ul>
         {% endif %}
-    {% endwith %}
+        {% endwith %}
+    </div>
 </div>
+
+<div id="check_article">
+
 </div>
 
 <div id="db_area">
-    
+
 </div>
 
 
 {% endblock %}
+
+
+
+{% block js %}
+
+<script>
+
+    var primary_group = null
+    var secondary_groupe = null
+
+    function save_article(){
+        at_name = document.getElementById("at_name").value
+        at_description = document.getElementById("at_description").value
+        at_weight = document.getElementById("at_weight").value
+        at_img = document.getElementById("at_picture").files[0];
+        at_prim_gp = primary_group
+        at_sec_gp = secondary_groupe
+        at_cats = document.getElementById("cats_hidden").innerHTML //im macro definiert
+
+        article = {"article": {"name": at_name, "description": at_description, "weight": at_weight, "img": at_img, "prim_groupe": at_prim_gp, "sec_groupe": at_sec_gp, "categories": at_cats}}
+        
+        html_pf = 
+
+        console.log(article)
+    }
+
+    function add_category(unit){
+        value_cat = document.getElementById("value_cat").value
+        prefix_cat = document.getElementById("prefix_cat").value
+        unit_cat = unit
+        cat = document.getElementById("attribute_select").value
+        
+        req = {
+            "cat": cat,
+            "value": value_cat,
+            "prefix": prefix_cat,
+            "unit": unit
+        }
+
+        sendData({"new_cat": req}, set_applied_cats)
+
+        document.getElementById("value_cat").value = ""
+        document.getElementById("prefix_cat").value = ""
+        document.getElementById("attribute_select").value = ""
+
+    }
+
+
+    function delete_cat(elem){
+        console.log("del")
+        sendData({"del_cat": elem}, set_applied_cats)
+    }
+
+    function set_applied_cats(req){
+        document.getElementById("applied_cats").innerHTML = req
+    }
+
+    function select_cat(title) {
+        sendData({"select_category": title}, set_further_cat)
+
+    }
+
+    function set_further_cat(resp){
+        document.getElementById("further_cat").innerHTML = resp
+    }
+
+    
+
+    function select_primary_groupe(title) {
+        sendData({ "get_secs": title }, set_gps)
+        primary_group = title
+        //TODO: set color
+    }
+
+    function select_secondary_groupes(title) {
+        secondary_groupe = title
+        //TODO: set color
+    }
+
+    function set_gps(response) {
+        document.getElementById('groupes').innerHTML = response
+    }
+
+    function deselect() {
+
+    }
+
+    function sendData(data, callback) {
+        var xhr = new XMLHttpRequest();
+        var url = "{{url_for('main.new_article')}}";
+
+        xhr.open("POST", url, true);
+        xhr.setRequestHeader("Content-Type", "application/json");
+
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState === 4 && xhr.status === 200) {
+                // Request was successful, handle response here if needed
+                //console.log(xhr.responseText);
+                callback(xhr.responseText)  // 2/2 statdessen braucht man eine callback funkltion und muss das so klobig machen
+
+
+            }
+        };
+
+        var jsonData = JSON.stringify(data);
+        xhr.send(jsonData);
+    }
+
+
+
+</script>
+
+{% endblock js %}

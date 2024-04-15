@@ -49,6 +49,7 @@ import os
 from werkzeug.utils import secure_filename
 
 from config import Config
+
 # db = SQLAlchemy(app)
 
 
@@ -108,78 +109,6 @@ def page_not_found(e):
 def test():
     return render_template("test.html")
 
-
-@main.route("/pop")
-def populate_database():
-    # Add sample data to Article table
-
-    areas = [
-        Area(name="AFSS_S1", max_cont=200, allocated_cont=0),
-        # Add more sample areas as needed
-    ]
-    db.session.bulk_save_objects(areas)
-
-    locations = [
-        # Location(area=1, category="PS", occupation_status=False, size="BM", position={"x": 1, "y": 2}), # LOG..Logistics, PS.. Permanent_storage, TS.. Temporary_storage
-        # Location(area=1, category="PS", occupation_status=False, size="BM", position={"x": 2, "y": 3}), # BM..Box_medium
-        # Add more sample locations as needed
-    ]
-
-    db.session.bulk_save_objects(locations)
-
-    articles = [
-        Article(
-            article_name="Sample Article 1",
-            article_description="Description 1",
-            category="Category 1",
-            groupes="Group 1",
-            weight=100,
-            picture="picture1.jpg",
-        ),
-        Article(
-            article_name="Sample Article 2",
-            article_description="Description 2",
-            category="Category 2",
-            groupes="Group 2",
-            weight=200,
-            picture="picture2.jpg",
-        ),
-        # Add more sample articles as needed
-    ]
-    db.session.bulk_save_objects(articles)
-
-    # Add sample data to Area table
-
-    containers = [
-        Container(
-            stocks=["1"],
-            barcode=randint(100000000000, 999999999999),
-            current_location=1,
-            target_location=1,
-            size="BM",
-        ),
-        Container(
-            stocks=["2"],
-            barcode=randint(100000000000, 999999999999),
-            current_location=2,
-            target_location=None,
-            size="BM",
-        ),
-        # Add more sample containers as needed
-    ]
-
-    db.session.bulk_save_objects(containers)
-
-    # Add sample data to Stock table
-    stocks = [
-        Stock(container=1, article=1, quantity=5),
-        Stock(container=2, article=2, quantity=10),
-        # Add more sample stocks as needed
-    ]
-    db.session.bulk_save_objects(stocks)
-
-    db.session.commit()
-    return jsonify({"message": "Data populated successfully"})
 
 
 class Edit_entry(FlaskForm):
@@ -395,101 +324,357 @@ def storage_templates():
 
 class FormNewArticle(FlaskForm):
     article_name = StringField(
-        "Article Name", validators=[DataRequired(), Length(max=50)]
+        "Article Name", validators=[Length(max=50)]
     )
     article_description = TextAreaField(
-        "Article Description", validators=[DataRequired(), Length(max=255)]
+        "Article Description", validators=[Length(max=255)]
     )
-    category = StringField("Category", validators=[DataRequired(), Length(max=20)])
-    groupes = StringField("Groupes", validators=[DataRequired(), Length(max=50)])
-    weight = IntegerField("Weight", validators=[DataRequired()])
+    
+    weight = IntegerField("Weight")
     picture = StringField("Picture", validators=[Length(max=30)])
-    submit = SubmitField("Artikel hinzufügen") #achtung wenn hier ter text geändert wird, muss dieser bei der auswertung auch geändert werden
-
+    
 
 def allowed_file(filename):
-    return '.' in filename and \
-        filename.rsplit('.', 1)[1].lower() in Config.ALLOWED_EXTENSIONS
+    return (
+        "." in filename
+        and filename.rsplit(".", 1)[1].lower() in Config.ALLOWED_EXTENSIONS
+    )
 
-@main.route("/new_article", methods=['GET', "POST"])
+added_attributes = []
+
+def string_to_list(string):
+    cleaned_string = string.strip('[]').replace(', ', ',')
+    log.info(f'cleaned_string {type(cleaned_string)}: {cleaned_string}')
+    # Split the string by commas and convert each element to an integer
+    list_from_string = [(item.strip("'")) for item in cleaned_string.split(',')]
+
+    return list_from_string
+
+@main.route("/new_article", methods=["GET", "POST"])
 def new_article():
     new_article_form = FormNewArticle()
     if request.method == "POST":
-        logcb(request.form)
-        if request.form['submit'] == "Artikel hinzufügen":
-            req = request.form
-            file = request.files['picture']
+        if request.data:
+            req = request.get_json()
 
-            if file.filename == '':
-                flash('No selected file')
+            if "get_secs" in req.keys():
+                title = req['get_secs']
+                secs = SecondaryGroup.query.filter_by(prim_title = title).all()
+                return get_template_attribute("macros_for_new_articles.html", "render_sec_groupes_for_prim")(secs)
+
+            if "deselect" in req.keys():
+                pass #TODO
+
+            if "select_category" in req.keys():
+                selected_cat = req["select_category"]
+
+                db_cat = Categories.query.filter_by(title = selected_cat).first()
+
+                prefixes = string_to_list(db_cat.prefixes)
+                log.info(f'prefixes {type(prefixes)}: {prefixes}')
+                unit = db_cat.unit
+
+                return get_template_attribute("macros_for_new_articles.html", "further_cat")(prefixes, unit)
+
+            if "new_cat" in req.keys():
+                data = req["new_cat"]
+
+                added_attributes.append(data)
+
+                return get_template_attribute("macros_for_new_articles.html", "list_cats")(added_attributes)
+            
+            if "del_cat" in req.keys():
+                element = eval(req["del_cat"])
+                log.info(f'element {type(element)}: {element}')
+                log.info(added_attributes)
+                added_attributes.remove(element)
+
+                return get_template_attribute("macros_for_new_articles.html", "list_cats")(added_attributes)
+
+            return 400
+
+        logcb(request.form)
+
+        """ if (request.form["submit"]) and (request.form["submit"] == "Artikel hinzufügen"):
+            req = request.form
+            
+            file = request.files["picture"]
+
+            if file.filename == "":
+                flash("No selected file")
                 return redirect(request.url)
             if file and allowed_file(file.filename):
                 filename = secure_filename(file.filename)
                 if os.path.exists(os.path.join(Config.UPLOAD_FOLDER, filename)):
-                    flash('File with same name already exists, please rename your file.')
+                    flash(
+                        "File with same name already exists, please rename your file."
+                    )
                     return redirect(request.url)
                 file.save(os.path.join(Config.UPLOAD_FOLDER, filename))
-                flash('File successfully uploaded')
+                flash("File successfully uploaded")
             else:
-                flash('Allowed file types are png, jpg, jpeg, bmp')
+                flash("Allowed file types are png, jpg, jpeg, bmp")
                 return redirect(request.url)
-            
+
             new = Article(
-            article_name = req['article_name'],
-            article_description = req['article_description'],
-            category = req['category'],
-            groupes = req['groupes'],
-            weight = int(req['weight']),
-            picture = filename,
+                article_name=req["article_name"],
+                article_description=req["article_description"],
+                category=req["category"],
+                groupes=req["groupes"],
+                weight=int(req["weight"]),
+                picture=filename,
             )
-            
+
             db.session.add(new)
             db.session.commit()
+            """
+    groupes = PrimaryGroup.query.all()
 
-    return render_template("new_article.html", article_form = new_article_form)
+    categories = Categories.query.all()
+
+    return render_template("new_article.html", article_form=new_article_form, groupes = groupes, categories = categories)
+
 
 def db_to_list(db_output):
     articles_list = []
     for article in db_output:
         article_dict = article.__dict__
         # Remove unwanted keys (e.g., internal SQLAlchemy attributes)
-        article_dict.pop('_sa_instance_state', None)
+        article_dict.pop("_sa_instance_state", None)
         articles_list.append(article_dict)
-    
+
     return articles_list
 
-@main.route("/manage_db", methods=['GET'])
+
+@main.route("/manage_db", methods=["GET"])
 def manage_db():
     return render_template("manage_db.html")
 
+def search_record_by_value(value, model, column_name):
+    # Query the database for the record matching the value in the specified column
+    records = model.query.filter(getattr(model, column_name) == value)
+    return records
+
 @main.route("/manage_articles", methods=["GET", "POST"])
 def edit_articles_db():
+    lim = 10
     if request.method == "POST":
-        #logcb(request)
-        if request.data: #check if request is json
+        # logcb(request)
+        if request.data:  # check if request is json
             log.info(request.get_json())
             req = request.get_json()
 
             if "delete" in req.keys():
                 log.info("")
-                article = Article.query.get(int(req['delete']))
+                article = Article.query.get(int(req["delete"]))
                 img = article.picture
-                
+
                 if article:
+                    file = os.path.join(Config.UPLOAD_FOLDER, img)
+                    if os.path.exists(file):
+                        pass
+                        os.remove(file)
                     db.session.delete(article)  # Delete the article from the session
                     db.session.commit()
-                    articles_search = Article.query.limit(10).all()
-                    return get_template_attribute("macros_for_manage_articles.html", "render_article_table")(articles_search)
+                    articles_search = Article.query.limit(lim).all()
+                    return get_template_attribute(
+                        "macros_for_manage_articles.html", "render_article_table"
+                    )(articles_search)
                 else:
                     return "400"
-        
 
-    
-    articles_search = Article.query.limit(10).all()
-    
+            if "changes" in req.keys():
+                changes = req["changes"]
+                log.info(f"changes {type(changes)}: {changes}")
+                for change in changes:
+                    log.info(f"change {type(change)}: {change}")
+                    id = list(change.keys())[0]
+                    # logcb(f'id {type(id)}: {id}')
+                    record = Article.query.get_or_404(int(id))
 
-    
-    return render_template("manage_articles.html", articles = articles_search)
+                    column_name = list(change[id].keys())[0]
+
+                    if hasattr(record, column_name):
+                        # Update the text in the column dynamically
+                        setattr(record, column_name, change[id][column_name])
+
+                        # Commit the changes to the database
+                        db.session.commit()
+
+                        articles_search = Article.query.limit(lim).all()
+                        
+                    else:
+                        return jsonify({"error": "Column does not exist"}), 400
+                return get_template_attribute(
+                        "macros_for_manage_articles.html", "render_article_table"
+                    )(articles_search)
+            
+            if "search" in req.keys():
+                search = req['search']
+                column_name = list(search.keys())[0]
+                value = search[column_name]
+
+                column = getattr(Article, column_name)
+
+                results = Article.query.filter(column.like('%' + value + '%'))
+
+                return get_template_attribute(
+                            "macros_for_manage_articles.html", "render_article_table"
+                        )(results)
+
+    articles_search = Article.query.limit(lim).all()
+
+    return render_template("manage_articles.html", articles=articles_search)
+
+@main.route("/manage_stock", methods=["GET", "POST"])
+def edit_stocks_db():
+
+    stock = Stock.query.limit(10).all()
+
+    return render_template("manage_stock.html", stocks = stock)
+
+@main.route("/manage_categories", methods=["GET", "POST"])
+def edit_categories_db():
+
+    if request.method == "POST":
+        log.info(request.form)
+        if request.data:  # check if request is json
+            log.info(request.get_json())
+            req = request.get_json()
+
+            if "new_cat" in req.keys():
+                n_c = req['new_cat']
+                log.info(n_c)
+                
+                
+                prefs = (n_c['prefixes'])
+                log.info(prefs)
+                
+                #if not isinstance(prefs, list):
+                #    flash("Prefixes in wrong format must be ['m', 'µ']")
+
+                #    cats = Categories.query.all()
+                #    return get_template_attribute("macros_for_manage_categories.html", "render_categories_table")(cats)
+
+                new_cat = Categories(
+                title = n_c['title'],
+                unit = n_c['unit'],
+                prefixes = prefs
+                )
+
+                db.session.add(new_cat)
+                db.session.commit()
+
+                cats = Categories.query.all()
+                return get_template_attribute("macros_for_manage_categories.html", "render_categories_table")(cats)
+            
+            if "delete" in req.keys():
+                del_title = req['delete']
+                cat = Categories.query.get(del_title)
+
+                db.session.delete(cat)
+                db.session.commit()
+
+                cats = Categories.query.all()
+                return get_template_attribute("macros_for_manage_categories.html", "render_categories_table")(cats)
+            
+            if "changes" in req.keys():
+                changes = req["changes"]
+                log.info(f"changes {type(changes)}: {changes}")
+                for change in changes:
+
+                    title = list(change.keys())[0]
+
+                    record = Categories.query.get_or_404(title)
+
+                    column_name = list(change[title].keys())[0]
+
+                    if hasattr(record, column_name):
+                        # Update the text in the column dynamically
+                        setattr(record, column_name, change[title][column_name])
+
+                        # Commit the changes to the database
+                        db.session.commit()
+                        cats = Categories.query.all()
+                        
+                    else:
+                        return jsonify({"error": "Column does not exist"}), 400
+                
+                return get_template_attribute("macros_for_manage_categories.html", "render_categories_table")(cats)
+
+    cats = Categories.query.all()
+
+    return render_template("manage_categories.html", cats = cats)
+
+@main.route("/manage_groupes", methods=["GET", "POST"])
+def edit_groupes_db():
+
+    if request.method == "POST":
+        log.info(request.form)
+        if request.data:  # check if request is json
+            log.info(request.get_json())
+            req = request.get_json()
+
+            if "new_prim_group" in req.keys():
+                logcb(req['new_prim_group'])
+                new_p_g = PrimaryGroup(
+                    title = req['new_prim_group']
+                )
+
+                db.session.add(new_p_g)
+                db.session.commit()
+
+                prim_groupes = PrimaryGroup.query.all()
+
+                return get_template_attribute("macros_for_manage_groupes.html", "render_prim_groupes_table")(prim_groupes)
+
+            if "new_sec_group" in req.keys():
+                prim_g = req['new_sec_group']['primary_group']
+                sec_g = req['new_sec_group']['secondary_group']
+
+                new_s_g = SecondaryGroup(
+                    prim_title = prim_g,
+                    title = sec_g
+                    )
+                
+                db.session.add(new_s_g)
+                db.session.commit()
+
+                prim_groupes = PrimaryGroup.query.all()
+
+                return get_template_attribute("macros_for_manage_groupes.html", "render_prim_groupes_table")(prim_groupes)
+            
+            if "secs_for_prim" in req.keys():
+                prim_g = req['secs_for_prim']
+
+                secs =  SecondaryGroup.query.filter_by(prim_title = prim_g).all()  
+                logcb(f'secs {type(secs)}: {secs}')
+                return get_template_attribute("macros_for_manage_groupes.html", "secondars")(secs, prim_g) #prim_g falls noch keine untergruppen vorhanden
+
+            if "delete_prim" in req.keys():
+                del_title = req['delete_prim']
+                gp = PrimaryGroup.query.get(del_title)
+
+                db.session.delete(gp)
+                db.session.commit()
+
+                prim_groupes = PrimaryGroup.query.all()
+
+                return get_template_attribute("macros_for_manage_groupes.html", "render_prim_groupes_table")(prim_groupes)
+            
+            if "changes" in req.keys():
+                changes = req['changes']
+
+
+                prim_groupes = PrimaryGroup.query.all()
+
+                return get_template_attribute("macros_for_manage_groupes.html", "render_prim_groupes_table")(prim_groupes)
+
+
+
+    prim_groupes = PrimaryGroup.query.all()
+
+    return render_template("manage_groupes.html", prim_groupes = prim_groupes)
 
 @main.route("/del")
 def delete_data():

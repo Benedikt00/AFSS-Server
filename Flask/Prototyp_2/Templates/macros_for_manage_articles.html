@@ -1,16 +1,234 @@
 {% macro render_article_table(articles) %}
+<div id="table_for_shit">
     <table id="article_table">
+        <thead>
+            <th> Bild </th>
+            <th> ID <button onclick="sortTable(1)">▼</button>
+                <input type="text" onchange="search_stuff(this, 'id')" />
+            </th>
+            <th> Name <button onclick="sortTable(2)">▼</button>
+                <input type="text" onchange="search_stuff(this, 'article_name')" />
+            </th>
+            <th> Beschreibung <button onclick="sortTable(3)">▼</button>
+                <input type="text" onchange="search_stuff(this, 'article_description')" />
+            </th>
+            <th> Gruppe <button onclick="sortTable(4)">▼</button>
+                <input type="text" onchange="search_stuff(this, 'groupes')" />
+            </th>
+            <th> categorie <button onclick="sortTable(5)">▼</button>
+                <input type="text" onchange="search_stuff(this, 'category')" />
+            </th>
+            <th> Gewicht <button onclick="sortTable(6)">▼</button>
+                <input type="text" onchange="search_stuff(this, 'weight')" />
+            </th>
+
+            <th> entf </th>
+        </thead>
         {% for article in articles %}
-            <tr>
-                <th><img src="{{ url_for('static', filename = 'product_pictures/' + article.picture)}}"></th>
-                <th>{{ article.id }}</th>
-                <th>{{ article.article_name }}</th>
-                <th>{{ article.article_description }}</th>
-                <th>{{ article.groupes }}</th>
-                <th>{{ article.category }}</th>
-                <th>{{ article.weight }}</th>
-                <th><button onclick="delete_at({{ article.id }})">&#128465;</button></th>
-            </tr>
+        <tr>
+            <td id=""><img src="{{ url_for('static', filename = 'product_pictures/' + article.picture)}}"></th>
+            <td id="">{{ article.id }}</th>
+            <td id="" ondblclick="to_input(this, 50, {{ article.id }}, 'article_name')">
+            {{ article.article_name }}
+            </th>
+            <td id="" ondblclick="to_input(this, 255, {{ article.id }}, 'article_description')">
+            {{article.article_description }}
+                </th>
+            <td id="" ondblclick="to_input(this, 20, {{ article.id }}, 'groupes')">
+            {{ article.groupes }}
+            </th>
+            <td id="" ondblclick="to_input(this, 50, {{ article.id }}, 'category')">
+            {{ article.category }}
+            </th>
+            <td id="" ondblclick="to_input_num(this, {{ article.id }}, 'weight')">
+            {{ article.weight }}
+            </th>
+            <td><button onclick="delete_at({{ article.id }})">&#128465;</button></th>
+        </tr>
         {% endfor %}
     </table>
+    <button onClick="submit_changes()">Submit Changes</button>
+
+</div>
+
+<script>
+
+    var activeInput = null; // Variable to keep track of active input
+
+    var activeInput = null
+    var activeId = null
+    var activeCategory = null
+
+    var changes = []
+
+    function search_stuff(elem, category) {
+        console.log(elem)
+        search = elem.value
+        sendData({ "search": { [category]: search } }, set_article)
+    }
+
+    function submit_changes() {
+        sendData({ "changes": changes }, set_article)
+    }
+
+    function to_input(el, max_len, id, categorie) {
+        // Check if there's an active input, close it if exists
+        if (activeInput !== null) {
+            close_input(activeInput);
+        }
+        console.log(el)
+
+        var val = el.innerHTML.trim(); // Trim whitespace
+        var inputHTML = "<input class=\"search_input\" type=\"text\" value=\"" + val + "\" maxlen=\"" + max_len + "\"/>";
+        el.innerHTML = inputHTML;
+        console.log(val)
+        // Set the active input to this one
+        activeInput = el;
+        activeId = id
+        activeCategory = categorie
+        // Focus on the input field
+        el.querySelector('input').focus();
+    }
+
+    function to_input_num(el, id, categorie) {
+        // Check if there's an active input, close it if exists
+        if (activeInput !== null) {
+            close_input(activeInput);
+        }
+
+        var val = el.innerHTML.trim(); // Trim whitespace
+        var inputHTML = "<input class=\"search_input\" type=\"number\" value=\"" + val + "\"/>";
+        el.innerHTML = inputHTML;
+        // Set the active input to this one
+        activeInput = el;
+        activeId = id
+        activeCategory = categorie
+        // Focus on the input field
+        el.querySelector('input').focus();
+    }
+
+    // Function to close the input and restore the original content
+    function close_input(el) {
+        var inputValue = el.querySelector('input').value; // Get the input value
+        el.innerHTML = inputValue; // Restore original content
+
+        //console.log(activeCategory)
+        new_ch = { [activeId]: { [activeCategory]: inputValue } } // [] um die variable ALS KEY VERWENDEN ZU KÖNNEN
+
+        changes.push(new_ch)
+        activeInput = null; // Reset active input
+        activeId = null
+        activeCategory = null
+    }
+
+    // Function to handle double click on table cell
+    function onDoubleClickHandler(el) {
+        if (el.tagName.toLowerCase() === 'td') {
+            to_input(el);
+        }
+    }
+
+    // Function to handle clicking outside input
+    document.addEventListener('click', function (event) {
+        if (activeInput !== null && !activeInput.contains(event.target)) {
+            close_input(activeInput);
+        }
+    });
+
+    // Function to handle pressing Enter key
+    document.addEventListener('keydown', function (event) {
+        if (event.key === 'Enter' && activeInput !== null) {
+            close_input(activeInput);
+        }
+    });
+
+    function delete_at(id) {
+        to_post = { "delete": id }
+        ret = sendData(to_post, set_article) // 1/2 maan, da xhr asyncron ist, kann der innerHTML = return nicht verwendet werden da sonst nur undefined da ist.
+
+    }
+
+    function sortTable(n) {
+        var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+        table = document.getElementById("article_table");
+        switching = true;
+        // Set the sorting direction to ascending:
+        dir = "asc";
+        /* Make a loop that will continue until
+        no switching has been done: */
+        while (switching) {
+            // Start by saying: no switching is done:
+            switching = false;
+            rows = table.rows;
+            /* Loop through all table rows (except the
+            first, which contains table headers): */
+            for (i = 1; i < (rows.length - 1); i++) {
+                // Start by saying there should be no switching:
+                shouldSwitch = false;
+                /* Get the two elements you want to compare,
+                one from current row and one from the next: */
+                x = rows[i].getElementsByTagName("TD")[n];
+                y = rows[i + 1].getElementsByTagName("TD")[n];
+                /* Check if the two rows should switch place,
+                based on the direction, asc or desc: */
+                if (dir == "asc") {
+                    if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
+                        // If so, mark as a switch and break the loop:
+                        shouldSwitch = true;
+                        break;
+                    }
+                } else if (dir == "desc") {
+                    if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
+                        // If so, mark as a switch and break the loop:
+                        shouldSwitch = true;
+                        break;
+                    }
+                }
+            }
+            if (shouldSwitch) {
+                /* If a switch has been marked, make the switch
+                and mark that a switch has been done: */
+                rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                switching = true;
+                // Each time a switch is done, increase this count by 1:
+                switchcount++;
+            } else {
+                /* If no switching has been done AND the direction is "asc",
+                set the direction to "desc" and run the while loop again. */
+                if (switchcount == 0 && dir == "asc") {
+                    dir = "desc";
+                    switching = true;
+                }
+            }
+        }
+    }
+    function set_article(response) {
+        document.getElementById('table_for_shit').innerHTML = response
+    }
+
+    function sendData(data, callback) {
+        var xhr = new XMLHttpRequest();
+        var url = "{{url_for('main.edit_articles_db')}}";
+
+        xhr.open("POST", url, true);
+        xhr.setRequestHeader("Content-Type", "application/json");
+
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState === 4 && xhr.status === 200) {
+                // Request was successful, handle response here if needed
+                //console.log(xhr.responseText);
+                callback(xhr.responseText)  // 2/2 statdessen braucht man eine callback funkltion und muss das so klobig machen
+
+
+            }
+        };
+
+        var jsonData = JSON.stringify(data);
+        xhr.send(jsonData);
+    }
+
+
+
+</script>
+
 {% endmacro %}

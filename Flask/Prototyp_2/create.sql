@@ -3,9 +3,9 @@ CREATE TABLE article (
     article_name VARCHAR(50),
     article_description TINYTEXT,
     category VARCHAR(20),
-    groupes VARCHAR(50),
+    groupes JSON,
     weight INT,
-    picture VARCHAR(30)
+    picture VARCHAR(100)
 );
 
 create Table area (
@@ -45,10 +45,36 @@ CREATE TABLE stock (
     foreign key (article) references article(id)
 );
 
+Create Table categories(
+	title varchar(50) Primary Key,
+    unit varchar(10),
+    prefixes JSON
+);
+
+Create Table primary_groupes(
+	title varchar(50) Primary Key
+);
+
+Create Table seondary_groupes(
+	prim_title varchar(50),
+    title varchar(50),
+    foreign key (title) references primary_groupes(title),
+    constraint PK_seondary_groupes Primary Key (prim_title, title)
+    );
+
+SELECT categories.title AS categories_title, categories.unit AS categories_unit, categories.perfixes AS categories_prefixes FROM categories;
+
+INSERT INTO primary_groupes (title)
+VALUES ('Maschinenbau');
+
+INSERT INTO categories (title, unit, prefixes)
+VALUES ('Höhe', 'm', '["c", "m", ""]');
+
+Select * from stock;
 
 drop table stock;
 drop table container;
 drop table location;
 drop table area;
 drop table article;
-
+drop table categories;
