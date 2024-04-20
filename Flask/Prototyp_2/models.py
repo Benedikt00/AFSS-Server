@@ -9,8 +9,8 @@ class Article(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     article_name = db.Column(db.String(50))
     article_description = db.Column(db.Text)
-    category = db.Column(db.String(20))
-    groupes = db.Column(db.String(50))
+    category = db.Column(db.JSON)
+    groupes = db.Column(db.JSON)
     weight = db.Column(db.Integer)
     picture = db.Column(db.String(100))
 

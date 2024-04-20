@@ -4,7 +4,7 @@
 </div>
 <div id="secs_list">
     {% for gp in secs %}
-    <div class="sec_title" onclick="select_secondary_groupes('{{gp.title}}')">
+    <div class="sec_title" onclick="select_secondary_groupes('{{gp.title}}', this)">
         {{gp.title}}
     </div>
     {% endfor %}
@@ -20,6 +20,7 @@
 {% endfor %}
 {%endmacro%}
 
+
 {% macro further_cat(prefixes, unit)%}
 <input type="number" id="value_cat">
 <select name="prefixes" id="prefix_cat">
@@ -30,6 +31,7 @@
 <p>{{unit}}</p>
 <button onclick="add_category('{{unit}}')">Attribut Hinzufügen</button>
 {% endmacro %}
+
 
 {% macro list_cats(cats)%}
 

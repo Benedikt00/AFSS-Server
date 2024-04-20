@@ -1,0 +1,49 @@
+{% extends "base_template.html" %}
+
+{% block head %}
+
+{% endblock %}
+
+{% block title %}
+Add Container
+{% endblock %}
+
+
+
+{% block content %}
+
+<div id="form_div">
+
+    
+
+</div>
+
+{% endblock %}
+
+{% block js %}
+<script>
+
+    function sendData(data, callback) {
+        var xhr = new XMLHttpRequest();
+        var url = "{{url_for('main.add_stock')}}";
+
+        xhr.open("POST", url, true);
+        xhr.setRequestHeader("Content-Type", "application/json");
+
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState === 4 && xhr.status === 200) {
+                // Request was successful, handle response here if needed
+                //console.log(xhr.responseText);
+                callback(xhr.responseText)  // 2/2 statdessen braucht man eine callback funkltion und muss das so klobig machen
+
+
+            }
+        };
+
+        var jsonData = JSON.stringify(data);
+        xhr.send(jsonData);
+    }
+
+</script>
+{% endblock %}
+

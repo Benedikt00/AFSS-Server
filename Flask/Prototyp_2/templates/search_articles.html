@@ -1,0 +1,31 @@
+{% extends "base_template.html" %}
+{% import "macros_for_search_articles.html" as macros %}
+
+
+{% block title %}Artikelsuche{% endblock %}
+{% block head %}
+
+<link rel="stylesheet" href="{{url_for('static', filename='search_articles.css')}}">
+
+
+{% endblock %}
+
+{% block content %}
+
+
+
+{{ macros.search_field()}}
+
+<div id="articles_listed">
+
+</div>
+
+{% endblock %}
+
+{% block js %}
+
+
+    {{macros.search_js()}}
+
+
+{% endblock js %}
