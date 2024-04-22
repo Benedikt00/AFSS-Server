@@ -26,7 +26,7 @@
         </thead>
         {% for article in articles %}
         <tr>
-            <td id=""><img src="{{ url_for('main.get_image', image_name='{{article.picture}}') }}"></th>
+            <td id=""><img src="{{ url_for('main.get_image', image_name=article.picture ) }}"></th>
             <td id="">{{ article.id }}</th>
             <td id="" ondblclick="to_input(this, 50, {{ article.id }}, 'article_name')">
             {{ article.article_name }}

@@ -8,6 +8,9 @@
         <li><a href="{{ url_for('main.search_articles') }}">Search Articles</a></li>
         <li><a href="{{ url_for('main.add_stock') }}">Stock hinzufügen</a></li>
 
+
+        <li id="wiki" title="Wiki"><a href="{{ url_for('wiki.wiki_index') }}">&#9432;</a></li>
+
         {#{% if not session['access'] %}
         <li id="login"><a href="{{ url_for('main.login') }}">Login</a></li>
         {% else %}
@@ -17,6 +20,7 @@
         
         <!-- Add more items as needed -->
         {# <li><a href="{{ url_for('') }}"></a></li> #}
+
     </ul>
 </nav>
 <script>
@@ -86,6 +90,11 @@ body{
 }
 
 #nav_top #login{
+    margin-left: auto;
+    
+}
+
+#nav_top #wiki{
     margin-left: auto;
     
 }

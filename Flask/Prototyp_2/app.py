@@ -96,8 +96,6 @@ def logcb(var):
 
 @main.route("/")
 def root():
-    # Redirect to "/sectionb"
-    # return redirect(url_for('selection'))
     return render_template("index.html")
 
 
@@ -110,7 +108,7 @@ def page_not_found(e):
 def test():
     return render_template("test.html")
 
-class Edit_entry(FlaskForm):
+""" class Edit_entry(FlaskForm):
     param1 = StringField("Parameter 1")
     param2 = StringField("Parameter 2")
     submit = SubmitField("Submit")
@@ -120,8 +118,10 @@ class Edit_entry(FlaskForm):
         super(Edit_entry, self).__init__(*args, **kwargs)
         self.param1.default = param1_default
         self.param2.default = param2_default
-        self.process()
+        self.process() """
 
+
+        
 
 @main.route("/storage_templates", methods=["GET", "POST"])
 def storage_templates():
@@ -435,7 +435,7 @@ def new_article():
             )
 
             db.session.add(new)
-            db.session.commit() """
+            db.session.commit() """ # Wird bei add_article gemacht
 
             return 200
 
@@ -449,6 +449,7 @@ def new_article():
 
 @main.route('/get_image/<image_name>')
 def get_image(image_name):
+    #logcb(f"{Config.UPLOAD_FOLDER} {image_name}  {os.path.join(Config.UPLOAD_FOLDER, image_name)}")
     return send_from_directory(Config.UPLOAD_FOLDER, image_name)
 
 @main.route("/add_article", methods=["POST"])
@@ -539,9 +540,8 @@ def search_record_by_value(value, model, column_name):
     return records
 
 
-@main.route("/manage_articles", methods=["GET", "POST"])
+@main.route("/manage_db/articles", methods=["GET", "POST"])
 def edit_articles_db():
-    lim = 10
     if request.method == "POST":
         # logcb(request)
         if request.data:  # check if request is json
@@ -560,7 +560,7 @@ def edit_articles_db():
                         os.remove(file)
                     db.session.delete(article)  # Delete the article from the session
                     db.session.commit()
-                    articles_search = Article.query.limit(lim).all()
+                    articles_search = Article.query.limit(Config.QUERY_LIMIT_SOFT).all()
                     return get_template_attribute(
                         "macros_for_manage_articles.html", "render_article_table"
                     )(articles_search)
@@ -585,7 +585,7 @@ def edit_articles_db():
                         # Commit the changes to the database
                         db.session.commit()
 
-                        articles_search = Article.query.limit(lim).all()
+                        articles_search = Article.query.limit(Config.QUERY_LIMIT_SOFT).all()
 
                     else:
                         return jsonify({"error": "Column does not exist"}), 400
@@ -606,12 +606,12 @@ def edit_articles_db():
                     "macros_for_manage_articles.html", "render_article_table"
                 )(results)
 
-    articles_search = Article.query.limit(lim).all()
+    articles_search = Article.query.limit(Config.QUERY_LIMIT_SOFT).all()
 
     return render_template("manage_articles.html", articles=articles_search)
 
 
-@main.route("/manage_stock", methods=["GET", "POST"])
+@main.route("/manage_db/stock", methods=["GET", "POST"])
 def edit_stocks_db():
 
     stock = Stock.query.limit(10).all()
@@ -619,7 +619,7 @@ def edit_stocks_db():
     return render_template("manage_stock.html", stocks=stock)
 
 
-@main.route("/manage_categories", methods=["GET", "POST"])
+@main.route("/manage_db/categories", methods=["GET", "POST"])
 def edit_categories_db():
 
     if request.method == "POST":
@@ -696,7 +696,7 @@ def edit_categories_db():
     return render_template("manage_categories.html", cats=cats)
 
 
-@main.route("/manage_groupes", methods=["GET", "POST"])
+@main.route("/manage_db/groupes", methods=["GET", "POST"])
 def edit_groupes_db():
 
     if request.method == "POST":
@@ -770,6 +770,42 @@ def edit_groupes_db():
     prim_groupes = PrimaryGroup.query.all()
 
     return render_template("manage_groupes.html", prim_groupes=prim_groupes)
+
+@main.route("/manage_db/containers", methods=["GET", "POST"])
+def edit_containers_db():
+    if request.method == "POST":
+        log.info(request.form)
+        if request.data:  # check if request is json
+            log.info(request.get_json())
+            req = request.get_json()
+
+            if "new_cont" in req.keys():
+                try:
+                    new_cont = Container(
+                        stocks = req["new_cont"]['stocks'],
+                        barcode = req["new_cont"]['barcode'],
+                        current_location = req["new_cont"]['current_location'],
+                        #target_location = req["new_cont"]['target_location'],
+                        size = req["new_cont"]['size']
+                    )
+
+                    db.session.add(new_cont)
+                    db.session.commit()
+                except Exception as e:
+                    flash("Error creating container")
+            
+            if "changes" in req.keys():
+                # TODO: 
+                flash("Not implemented")
+
+                return get_template_attribute("macros_for_containers.html", "render_containers")(containers.query.limit(Config.QUERY_LIMIT_SOFT).all)
+                
+
+    containers = Container.query.limit(Config.QUERY_LIMIT_SOFT).all()
+
+    return render_template("manage_containers.html", containers = containers)
+
+
 
 def search_articles_db_groupes(group_names):
     if isinstance(group_names, str):
@@ -865,6 +901,14 @@ def add_container():
     if request.method == "POST":
         if request.data:
             req = request.get_json()
+            if "get_barcode" in req.keys():
+                # TODO:
+                return randint(100000000, 1000000000 - 1)
+            
+            if "add_container" in req.keys():
+                bc = req['add_container']["barcode"]
+                size = req['add_container']["size"]
+                
     return render_template("add_container.html")
 
 

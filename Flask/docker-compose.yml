@@ -30,7 +30,7 @@ services:
     volumes:
       - db-data:/var/lib/mysql
     ports:
-      - "3308:3306"
+      - "3309:3306"
     networks:
       - mynetwork
 

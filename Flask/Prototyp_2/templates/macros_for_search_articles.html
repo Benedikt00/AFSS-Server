@@ -49,7 +49,8 @@
         </thead>
         {% for article in articles %}
         <tr>
-                <td id=""><img src="{{ url_for('static', filename = 'product_pictures/' + article.picture)}}"></th>
+                <td id=""><img src="{{ url_for('main.get_image', image_name=article.picture ) }}"></th>
+                
                 <td id="">{{ article.id }}</th>
                 <td id="">
                         {{ article.article_name }}
@@ -143,8 +144,8 @@
                 search = { "search_with_groupes": [prim_gp, sec_gp], "string_search": string_search, "attributes": attributes, "extend_search": extended_search, "show_all": show_all }
 
                 console.log(search)
-                sendData_db({"search": search}, set_listed_articles)
-                
+                sendData_db({ "search": search }, set_listed_articles)
+
         }
 
         window.onload = function () {

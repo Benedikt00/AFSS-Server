@@ -1,11 +1,10 @@
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.dialects.mysql import BIGINT
-from sqlalchemy import Column, BigInteger, ForeignKey, Integer, String
+from sqlalchemy import Column, BigInteger, ForeignKey, Integer, String, Float
 
 from extensions import db
 
 class Article(db.Model):
-    
     id = db.Column(db.Integer, primary_key=True)
     article_name = db.Column(db.String(50))
     article_description = db.Column(db.Text)
@@ -63,3 +62,32 @@ class SecondaryGroup(db.Model):
     title = db.Column(db.String(50), primary_key=True)
 
     primary_group = db.relationship('PrimaryGroup', backref='secondary_groups')
+
+
+class LookupTableSearch(db.Model):
+    __tablename__ = 'Lookup_Table_Search'
+
+    term = db.Column(db.String(255), primary_key=True)
+    location = db.Column(db.JSON)
+
+    def __repr__(self):
+        return f"<LookupTableSearch(term='{self.term}', location='{self.location}')>"
+    
+    
+class InverseDocumentTableSearch(db.Model):
+    __tablename__ = 'inverse_document_table_search'
+
+    term = db.Column(db.String(255), primary_key=True)
+    value = db.Column(db.Float)
+
+    def __repr__(self):
+        return f"<InverseDocumentTableSearch(term='{self.term}', value='{self.value}')>"
+
+class TermFrequencyList(db.Model):
+    __tablename__ = 'term_frequency_list'
+
+    id = db.Column(db.Integer, primary_key=True)
+    terms = db.Column(db.JSON)
+
+    def __repr__(self):
+        return f"<InverseDocumentTableSearch(id='{self.id}', terms='{self.terms}')>"

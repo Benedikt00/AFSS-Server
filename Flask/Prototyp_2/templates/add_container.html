@@ -13,8 +13,21 @@ Add Container
 {% block content %}
 
 <div id="form_div">
-
     
+    <p>Barcode o. A.</p>
+    <input id="barcode_inp" max="32">
+    <button onClick="get_barcode()">Vom Wareneingang lesen</button>
+    <input id="size_inp" max="10">
+
+    <button onClick="generate_container()">Generate</button>
+
+    <p>Arten:</p>
+    <p>BM .. Box Medium</p>
+    
+    <div id="generated_cont">
+        	
+    </div>
+    <div id="status"></div>
 
 </div>
 
@@ -23,9 +36,37 @@ Add Container
 {% block js %}
 <script>
 
+    function generate_container(){
+        barcode = document.getElementById("barcode_inp").value
+        size = document.getElementById("size_inp").value
+        htl = `<p>${barcode}</p>` + 
+        `<p>${size}</p>` + 
+        "<button onclick='add_container()'>Container hinzufügen</button>"
+        document.getElementById('generated_cont').innerHTML = htl
+    }
+
+    function add_container(){
+        barcode = document.getElementById("barcode_inp").value
+        size = document.getElementById("size_inp").value
+        sendData({"add_container": {"barcode": barcode, "size": size}})
+
+    }
+
+    function set_status(req){
+        document.getElementById("status").innerHTML = req
+    }
+
+    function get_barcode(){
+        sendData({"get_barcode": "pls"}, set_barcode)
+    }
+
+    function set_barcode(code){
+        document.getElementById("barcode_inp").value = code
+    }
+
     function sendData(data, callback) {
         var xhr = new XMLHttpRequest();
-        var url = "{{url_for('main.add_stock')}}";
+        var url = "{{url_for('main.add_container')}}";
 
         xhr.open("POST", url, true);
         xhr.setRequestHeader("Content-Type", "application/json");

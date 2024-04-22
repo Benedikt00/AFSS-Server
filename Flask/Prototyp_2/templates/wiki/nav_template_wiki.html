@@ -1,0 +1,74 @@
+<div class="sidebar">
+    <a href="{{url_for('main.root')}}">Home</a>
+    <div class="category">
+        <a href="#" class="category-toggle">Software</a>
+        <div class="submenu">
+            <a href="{{url_for('wiki.software_faq')}}">FAQ</a>
+            <a href="#">Flask Architektur</a>
+            <a href="#">Docker</a>
+            <a href="#">SPS Kommunikation</a>
+        </div>
+    </div>
+    <div class="category">
+        <a href="#" class="category-toggle">Hardware</a>
+        <div class="submenu">
+            <a href="#">Subcategory 1</a>
+            <a href="#">Subcategory 2</a>
+            <a href="#">Subcategory 3</a>
+        </div>
+    </div>
+    <!-- Add more categories as needed -->
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const categoryToggles = document.querySelectorAll('.category-toggle');
+
+        categoryToggles.forEach(function(toggle) {
+            toggle.addEventListener('click', function() {
+                this.parentNode.classList.toggle('active');
+            });
+        });
+    });
+</script>
+
+
+<style>
+    body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+    }
+    .sidebar {
+        height: 100%;
+        width: 250px;
+        position: fixed;
+        top: 0;
+        left: 0;
+        background-color: #333;
+        padding-top: 20px;
+        overflow-x: hidden;
+        transition: 0.5s;
+        padding-bottom: 20px;
+    }
+    .sidebar a {
+        padding: 10px 20px;
+        text-decoration: none;
+        font-size: 18px;
+        color: white;
+        display: block;
+        transition: 0.3s;
+    }
+    .sidebar a:hover {
+        background-color: #555;
+    }
+    .category {
+        padding-left: 20px;
+    }
+    .category .submenu {
+        display: none;
+        padding-left: 20px;
+    }
+    .category.active .submenu {
+        display: block;
+    }
+</style>
