@@ -5,13 +5,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>{% block title %}{% endblock %}</title>
     {% block head %}
     {% endblock %}
 </head>
 <body>
     {% include "wiki/nav_template_wiki.html" %}
-    <div id="content">{% block content %}{% endblock %}</div>
+    <div id="content">
+        {% block content %}
+        
+        
+        {% endblock %}</div>
     {# <div id="footer">
         {% block footer %}
         &copy; Copyright 2024 by Benedikt Simbürger</a>.

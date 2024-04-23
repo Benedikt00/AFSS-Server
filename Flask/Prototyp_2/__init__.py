@@ -14,9 +14,11 @@ def create_app():
     db.init_app(app)
 
     bcrypt.init_app(app)
+
     app.register_blueprint(main)
     app.register_blueprint(wiki, url_prefix='/wiki')    
     app.register_blueprint(search, url_prefix='/search')    
+    
     app.app_context()
     #login_manager.init_app(app)
     #login_manager.init_app(app)

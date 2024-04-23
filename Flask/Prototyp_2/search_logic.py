@@ -85,6 +85,7 @@ def method_name(search_term):
     doc_ids = []
 
     term_freq_list = TermFrequencyList.query.all()
+
     for doc in term_freq_list:
         doc_terms = doc.terms
         doc_vec = []
@@ -105,20 +106,29 @@ def method_name(search_term):
                 doc_vec.append(0)
         document_vectors.append(doc_vec)
         doc_ids.append(doc.id)
+
     sims = []
 
     for document_vec in document_vectors:
         diff = cos_similarity(search_vector, document_vec)
         sims.append(diff)
     
-    print(sims)
+    re_best_list = []
+    for x in range(len(sims)):
+        re_best_list.append([sims[x], doc_ids[x]])
+    
+    re_best_list = sorted(re_best_list, key=lambda x: x[0], reverse=True)
+
+    filtered_list = [sublist for sublist in re_best_list if sublist[0] != 0]
+
+
+
+    print(re_best_list)
     print(doc_ids)
-    return "200"
+    return jsonify(filtered_list)
 
 @search.route("/search_test", methods=["GET", "POST"])
-def search_test():
-
-    
+def search_test():    
         # Output the content
     print(content)
     
@@ -193,44 +203,3 @@ def set_search_db():
 
 
 # the term Frequeny for every therm in all of the documents
-
-
-""" 
-
-#make the document vektors
-document_vectors = []
-
-for doc in term_frequency_list:
-
-    doc_vec = []
-
-    for term in query_terms:
-
-        if term in idf.keys():
-            invers_document_frequency_for_term = idf[term]
-            if term in doc.keys():
-                term_frequency_for_document = doc[term]
-            else:
-                term_frequency_for_document = 0
-            tf_idf = invers_document_frequency_for_term * term_frequency_for_document
-
-            doc_vec.append(tf_idf)
-        else:
-            doc_vec.append(0)
-    document_vectors.append(doc_vec)
-
-sims = []
-
-for document_vec in document_vectors:
-    diff = cos_similarity(search_vector, document_vec)
-    sims.append(diff)
-
-print(sims)
-
-number_of_elements_to_desplay = 5
-
-top_indeces = get_top_indices(sims, 5)
-
-
-for x in top_indeces:
-    print(" ", documents[x]) """
