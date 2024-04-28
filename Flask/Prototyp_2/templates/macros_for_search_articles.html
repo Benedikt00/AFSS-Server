@@ -1,29 +1,158 @@
 {% macro search_field() -%}
+<div>
+
+        <p>Activate Fancy Search:</p>
+        <label id="switch_fancy">
+                <input type="checkbox" id="fancy_switch_box">
+                <span class="slider round"></span>
+        </label>
+</div>
+
+<div id="fancy_search">
+        <input type="text" name="fancy_search" placeholder="Search..." id="fancy_search_input" onsubmit="search_fancy()">
+        <button type="button" id="search-button" onclick="search_fancy()">&#x1F50E;&#xFE0E;</button>
+</div>
 
 <div id="search_field">
-
         <h3>Select Categories</h3>
         <div id="group_selection"> <!-- gets filled by the macro -->
         </div>
-
         <div id="string_search">
-                <p>Suche: </p>
+                <p>Suche:</p>
                 <input type="text" id="inp_search">
         </div>
-
         <div id="checkboxes">
                 <p>Extended Search</p>
                 <input type="checkbox" id="search_extended">
                 <p>Show all</p>
                 <input type="checkbox" id="show_all_results">
         </div>
-
         <div id="cat_selection">
-
         </div>
         <button onclick="search_button_press()">Suchen</button>
-
 </div>
+
+<style>
+        #fancy_search {
+                display: none;
+                flex-direction: row;
+                max-width: 500px;
+                margin: 20px auto;
+                
+                padding: 10px;
+                border: 1px solid #ccc;
+                border-radius: 5px;
+                overflow: hidden;
+                transition: max-height 1s ease;
+        }
+
+        /* Styling the fancy search input */
+        #fancy_search_input {
+                margin-right: 10px;
+                width: auto;
+                flex: 3;
+                padding: 10px;
+                border: none;
+                outline: none;
+                font-size: 16px;
+        }
+
+        /* Styling the search button */
+        #search-button {
+                padding: 10px 20px;
+                background-color: #4285F4;
+                color: white;
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+                transition: background-color 0.3s;
+        }
+
+        #search-button:hover {
+                background-color: #357AE8;
+        }
+
+
+        #search_field {
+                transition: height 0.5s ease;
+        }
+
+        .show-fancy-search {
+                /*max-height: 100px;*/
+                display: block;
+                /* Adjust this height as needed */
+        }
+
+        .hide-fancy-search {
+                /*max-height: 0;*/
+                display: none;
+        }
+
+        /* 
+        source. https://www.w3schools.com/howto/howto_css_switch.asp
+        The switch - the box around the slider */
+        #switch_fancy {
+                position: relative;
+                display: inline-block;
+                width: 60px;
+                height: 34px;
+        }
+
+        /* Hide default HTML checkbox */
+        #switch_fancy input {
+                opacity: 0;
+                width: 0;
+                height: 0;
+        }
+
+        /* The slider */
+        .slider {
+                position: absolute;
+                cursor: pointer;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background-color: #ccc;
+                -webkit-transition: .4s;
+                transition: .4s;
+        }
+
+        .slider:before {
+                position: absolute;
+                content: "";
+                height: 26px;
+                width: 26px;
+                left: 4px;
+                bottom: 4px;
+                background-color: white;
+                -webkit-transition: .4s;
+                transition: .4s;
+        }
+
+        input:checked+.slider {
+                background-color: #2196F3;
+        }
+
+        input:focus+.slider {
+                box-shadow: 0 0 1px #2196F3;
+        }
+
+        input:checked+.slider:before {
+                -webkit-transform: translateX(26px);
+                -ms-transform: translateX(26px);
+                transform: translateX(26px);
+        }
+
+        /* Rounded sliders */
+        .slider.round {
+                border-radius: 34px;
+        }
+
+        .slider.round:before {
+                border-radius: 50%;
+        }
+</style>
 
 {%- endmacro %}
 
@@ -50,7 +179,7 @@
         {% for article in articles %}
         <tr>
                 <td id=""><img src="{{ url_for('main.get_image', image_name=article.picture ) }}"></th>
-                
+
                 <td id="">{{ article.id }}</th>
                 <td id="">
                         {{ article.article_name }}
@@ -133,6 +262,33 @@
 {% macro search_js() %}
 
 <script>
+
+        function search_fancy(){
+                query = document.getElementById("fancy_search_input").value
+                console.log(query)
+                sendData_db({"fancy_query": query}, set_listed_articles)
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+                const fancySwitchCheckbox = document.getElementById("fancy_switch_box");
+                const fancySearchDiv = document.getElementById("fancy_search");
+                const searchFieldDiv = document.getElementById("search_field");
+
+                fancySwitchCheckbox.addEventListener("change", function () {
+                        if (fancySwitchCheckbox.checked) {
+                                searchFieldDiv.style.height = searchFieldDiv.scrollHeight + fancySearchDiv.scrollHeight + "px";
+                                fancySearchDiv.style.display = 'flex';
+                                searchFieldDiv.classList.add("hide-fancy-search");
+                        } else {
+                                searchFieldDiv.style.height = searchFieldDiv.scrollHeight - fancySearchDiv.scrollHeight + "px";
+                                searchFieldDiv.classList.remove("hide-fancy-search");
+                                fancySearchDiv.style.display = 'none';
+
+                        }
+                });
+        });
+
+
         function search_button_press() {
 
                 string_search = document.getElementById("inp_search").value

@@ -1,29 +1,21 @@
-{% macro render_containers(containers) -%}
-    
-<div id="container_table">
+{% macro render_categories_table(categorys) %}
+
+<div id="category_table">
 
 <table>
     <thead>
-        <td></td>
-        <th>Stocks</th>
-        <th>Barcode</th>
-        <th>current_location</th>
-        <th>Target target_location</th>
-        <th>Size</th>
-
-        <th><button onclick="new_cont()" id="add_button">+</button></th>
+        <th>Name</th>
+        <th>Unit</th>
+        <th>Prefixes</th>
+        <th><button onclick="new_cat()" id="add_button">+</button></th>
     </thead>
-    <tbody id="container_table_body">
-    {% for cont in containers %}
+    <tbody id="category_table_body">
+    {% for Category in categorys %}
     <tr>
-        <td>{{cont.id}}</td>
-        <td ondblclick="to_input(this, 100, '{{ cont.stocks }}', 'stocks')">{{cont.stocks}}</td>
-        <td ondblclick="to_input(this, 32, '{{ cont.barcode }}', 'barcode')">{{cont.barcode}}</td>
-        <td ondblclick="to_input(this, 100, '{{ cont.current_location }}', 'current_location')" >{{cont.current_location}}</td>
-        <td ondblclick="to_input(this, 100, '{{ cont.target_location }}', 'target_location')" >{{cont.target_location}}</td>
-        <td ondblclick="to_input(this, 10, '{{ cont.size }}', 'size')" >{{cont.size}}</td>
-        
-        <td><button onclick="delete_cont('{{cont.id}}')">del</button></td>
+        <td ondblclick="to_input(this, 50, '{{ Category.title }}', 'title')">{{Category.title}}</td>
+        <td ondblclick="to_input(this, 10, '{{ Category.title }}', 'unit')">{{Category.unit}}</td>
+        <td ondblclick="to_input(this, 100, '{{ Category.title }}', 'prefixes')" >{{Category.prefixes}}</td>
+        <td><button onclick="delete_cat('{{Category.title}}')">del</button></td>
     </tr>
     {% endfor %}
     </tbody>
@@ -42,11 +34,6 @@
         {% endwith %}
     </div>
 </div>
-
-{%- endmacro %}
-
-{% macro js() -%}
-
 <script>
 
     var activeInput = null; // Variable to keep track of active input
@@ -57,55 +44,50 @@
 
     var changes = []
 
-    function new_cont() {
+    function new_cat() {
         var newRow = document.createElement('tr');
         newRow.innerHTML = `
-        <td></td>
-        <td><input type="text" name="stocks"></td>
-        <td><input type="text" name="barcode"></td>
-        <td><input type="text" name="current_location"></td>
-        <td></td>
-        <td><input type="text" name="size"></td>
-        <td><button onclick="saveNewContainer(this)">Save</button></td>
+        <td><input type="text" name="title"></td>
+        <td><input type="text" name="unit"></td>
+        <td><input type="text" name="prefixes"></td>
+        <td><button onclick="saveNewCategory(this)">Save</button></td>
     `;
-        document.getElementById('container_table_body').insertBefore(newRow, document.getElementById('container_table_body').firstChild);
+        document.getElementById('category_table_body').insertBefore(newRow, document.getElementById('category_table_body').firstChild);
     
         document.getElementById("add_button").hidden = true;
     }
 
     function submit_changes() {
-        sendData({ "changes": changes }, set_conts)
+        sendData({ "changes": changes }, set_cats)
     }
 
-    function delete_cont(id){
+    function delete_cat(id){
         console.log("del")
         sendData({"delete": id}, set_cats)
     }
 
-    function saveNewContainer(button) {
+    function saveNewCategory(button) {
 
         var newRow = button.parentNode.parentNode;
 
-        var stocks = newRow.querySelector('input[name="stocks"]').value;
-        var barcode = newRow.querySelector('input[name="barcode"]').value;
-        var current_location = newRow.querySelector('input[name="current_location"]').value;
-        //var target_location = newRow.querySelector('input[name="target_location"]').value;
-        var size = newRow.querySelector('input[name="size"]').value;
+        var title = newRow.querySelector('input[name="title"]').value;
+        var unit = newRow.querySelector('input[name="unit"]').value;
+        var prefixes = newRow.querySelector('input[name="prefixes"]').value;
 
-    sendData({"new_cont": {"stocks": stocks, "barcode": barcode, "current_location": current_location, "size": size}}, set_conts)
+    sendData({"new_cat": {"title": title, "unit": unit, "prefixes": prefixes}}, set_cats)
 
         newRow.parentNode.removeChild(newRow);
         document.getElementById("add_button").hidden = false;
 
     }
 
-    function set_conts(response) {
-        document.getElementById('mc_containers').innerHTML = response
+    function set_cats(response) {
+        document.getElementById('category_table').innerHTML = response
     }
 
     function sendData(data, callback) {
         var xhr = new XMLHttpRequest();
-        var url = "{{url_for('main.edit_containers_db')}}";
+        var url = "{{url_for('manage_db.edit_categories_db')}}";
 
         xhr.open("POST", url, true);
         xhr.setRequestHeader("Content-Type", "application/json");
@@ -181,4 +163,4 @@
 </script>
 
 
-{%- endmacro %}
+{% endmacro %}

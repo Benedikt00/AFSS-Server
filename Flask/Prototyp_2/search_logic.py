@@ -60,12 +60,7 @@ def cos_similarity(query_p, document_p):
 
 # credit: https://janav.wordpress.com/2013/10/27/tf-idf-and-cosine-similarity/
 
-@search.route('/s/<search_term>')
-def method_name(search_term):
-
-
-    print(search_term)
-
+def search_query(search_term):
     search_vector = []
 
     for term in search_term.split():
@@ -121,10 +116,16 @@ def method_name(search_term):
 
     filtered_list = [sublist for sublist in re_best_list if sublist[0] != 0]
 
+    return filtered_list
 
+@search.route('/search_articles/<search_term>')
+def method_name(search_term):
+    
+    filtered_list = search_query(search_term)
 
-    print(re_best_list)
-    print(doc_ids)
+    print(search_term)
+
+    
     return jsonify(filtered_list)
 
 @search.route("/search_test", methods=["GET", "POST"])

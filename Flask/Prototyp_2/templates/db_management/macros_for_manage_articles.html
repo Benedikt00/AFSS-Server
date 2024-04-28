@@ -208,7 +208,7 @@
 
     function sendData(data, callback) {
         var xhr = new XMLHttpRequest();
-        var url = "{{url_for('main.edit_articles_db')}}";
+        var url = "{{url_for('manage_db.edit_articles_db')}}";
 
         xhr.open("POST", url, true);
         xhr.setRequestHeader("Content-Type", "application/json");

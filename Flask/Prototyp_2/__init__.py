@@ -2,7 +2,9 @@ from flask import Flask
 from config import Config
 from extensions import db, login_manager, bcrypt
 from app import main
-from wiki import  wiki
+from wiki import wiki
+from manage_db import manage_db
+from afss_templates import afss_templates
 from search_logic import search
 
 import os
@@ -18,6 +20,8 @@ def create_app():
     app.register_blueprint(main)
     app.register_blueprint(wiki, url_prefix='/wiki')    
     app.register_blueprint(search, url_prefix='/search')    
+    app.register_blueprint(afss_templates, url_prefix='/afss_templates')    
+    app.register_blueprint(manage_db, url_prefix='/manage_db')    
     
     app.app_context()
     #login_manager.init_app(app)

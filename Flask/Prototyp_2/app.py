@@ -51,6 +51,8 @@ from werkzeug.utils import secure_filename
 
 from config import Config
 
+from search_logic import search_query
+
 # db = SQLAlchemy(app)
 
 
@@ -59,11 +61,9 @@ main = Blueprint("main", __name__)
 
 """
 	zu empfehlen ist die vs code extension "better jinja" dann kann unten 
-    rechts jinja html als sprahe verwendet werden. formattierung get zwar trozdem nicht, 
+    rechts "jinja html" als sprache verwendet werden. formattierung get zwar trozdem nicht, 
     aber es werden keine errors mehr gemeldet
 """
-
-
 """ 
 DEBUG: Detailed information, typically of interest only when diagnosing problems.
 INFO: Confirmation that things are working as expected.
@@ -108,219 +108,7 @@ def page_not_found(e):
 def test():
     return render_template("test.html")
 
-""" class Edit_entry(FlaskForm):
-    param1 = StringField("Parameter 1")
-    param2 = StringField("Parameter 2")
-    submit = SubmitField("Submit")
-
-    # Constructor to set default values
-    def __init__(self, param1_default="", param2_default="", *args, **kwargs):
-        super(Edit_entry, self).__init__(*args, **kwargs)
-        self.param1.default = param1_default
-        self.param2.default = param2_default
-        self.process() """
-
-
         
-
-@main.route("/storage_templates", methods=["GET", "POST"])
-def storage_templates():
-
-    logcb(request.form)
-    logcb(request)
-    if request.method == "POST":
-        if request.data:
-            log.info(request.get_json())
-        if "num_rows" in request.form.keys():
-            log.info(request.form)
-            log.info("rows")
-            num_rows = int(request.form["num_rows"])
-            num_cols = int(request.form["num_cols"])
-            row_spacing = int(request.form["row_spacing"])
-            col_spacing = int(request.form["col_spacing"])
-            x_spacers = json.loads(request.form["spacers"].replace("'", '"'))
-
-            x_zero = int(request.form["x_zero"])
-            y_zero = int(request.form["x_zero"])
-
-            xml_root = ET.Element("storage", title="afss_2")
-
-            con_x_spacers = [
-                {key: str(value) for key, value in d.items()} for d in x_spacers
-            ]  # js braucht json in diesem format
-
-            con_x_spacers = str(con_x_spacers).replace("'", "\\'")
-
-            data = ET.SubElement(
-                xml_root,
-                "gen_data",
-                num_rows=str(num_rows),
-                num_cols=str(num_cols),
-                row_spacing=str(row_spacing),
-                col_spacing=str(col_spacing),
-                x_spacers=str(con_x_spacers),
-            )
-
-            for i in range(num_rows):
-                row = ET.SubElement(
-                    xml_root, "row", id=str(i), y=str((i * row_spacing) + y_zero)
-                )
-
-                x_spaceing = 0
-
-                x_spacers_to_do = x_spacers[
-                    :
-                ]  # wtf, hier wird eine kopie erstellt, da sonst auch das originalvalue mit remove() bearbeitet wird
-
-                # log.info(f'x_spacers_to_do {type(x_spacers_to_do)}: {x_spacers_to_do}')
-
-                for j in range(num_cols + len(x_spacers)):
-                    used = False
-                    for el in x_spacers_to_do:
-                        if el["x"] == j:
-
-                            x_spaceing += el["width"]
-                            x_spacers_to_do.remove(el)
-                            spacer = ET.SubElement(
-                                row,
-                                "spacer",
-                                id=str(j),
-                                x=str(j * col_spacing + x_zero + x_spaceing),
-                                width=str(el["width"]),
-                            )
-                            used = True
-                            break
-                        break
-                    if not used:
-                        location = ET.SubElement(
-                            row,
-                            "location",
-                            id=str(j),
-                            x=str(j * col_spacing + x_zero + x_spaceing),
-                            y=str((i * row_spacing) + y_zero),
-                            category="PS",
-                        )
-
-            tree = ET.ElementTree(xml_root)
-            tree.write("storage_templates/afss_2.xml")
-
-            # log.info(xmltodict.parse(tostring(xml_root, encoding='unicode', method="xml")))
-
-            return render_template(
-                "afss_templates.html",
-                num_rows=num_rows,
-                num_cols=num_cols,
-                row_spacing=row_spacing,
-                col_spacing=col_spacing,
-                x_spacers=x_spacers,
-                x_zero=x_zero,
-                y_zero=y_zero,
-                xml=xmltodict.parse(
-                    tostring(xml_root, encoding="unicode", method="xml")
-                ),
-                edit_form_bool=0,
-            )
-
-        if "xy" in request.get_json():
-            id_x = request.get_json()["xy"]["id_x"]
-            id_y = request.get_json()["xy"]["id_y"]
-            log.info(id_x)
-            log.info(id_y)
-            # edit_form = Edit_entry(param1_default=id_x, param2_default=id_y)
-
-            tree = ET.parse("storage_templates/afss_2.xml")
-            root = tree.getroot()
-
-            for row in root.findall("row"):
-                if int(row.get("id")) == int(id_y):
-                    for element in row.findall("*"):
-                        if int(element.get("id")) == int(id_x):
-                            log.info(f"{id_x}_found")
-                            break
-                    break
-
-            y_id = row.get("id")
-            y_cord_row = row.get("y")
-
-            if element.tag == "location":
-                cat = element.get("category")
-                x_id = element.get("id")
-                y_cord = element.get("y")
-                x_cord = element.get("x")
-                dt = {
-                    "type": "location",
-                    "y_id": y_id,
-                    "x_id": x_id,
-                    "y_cord": y_cord,
-                    "x_cord": x_cord,
-                    "category": cat,
-                }
-
-                return get_template_attribute("temp_edit.html", "edit_loc")(
-                    "Location", x_id, y_id, x_cord, y_cord, cat
-                )
-
-            else:
-                width = element.get("width")
-                x_id = element.get("id")
-                x_cord = element.get("x")
-                dt = {
-                    "type": "spacer",
-                    "y_id": y_id,
-                    "x_id": x_id,
-                    "x_cord": x_cord,
-                    "width": width,
-                }
-
-                return get_template_attribute("temp_edit.html", "edit_spc")(
-                    "Spacer", x_id, y_id, x_cord, width
-                )
-        if "ch" in request.get_json():
-            logcb(request.get_json())
-            data = request.get_json()
-            log.info("ch")
-            tree = ET.parse("storage_templates/afss_2.xml")
-            root = tree.getroot()
-
-            for row in root.findall("row"):
-                if int(row.get("id")) == int(data["id_y"]):
-                    for element in row.findall("*"):
-                        if int(element.get("id")) == int(data["id_x"]):
-                            logcb(f"_found")
-                            if data["name"] == "Location":
-                                element.set("x", (data["x"]))
-                                element.set("y", (data["y"]))
-                                element.set("category", (data["ch"]))
-                            if data["name"] == "Spacer":
-                                element.set("x", (data["x"]))
-                                element.set("category", (data["ch"]))
-                            break
-                    break
-
-            tree.write("storage_templates/afss_2.xml")
-            return "200"
-
-    return render_template(
-        "afss_templates.html",
-        num_rows=3,
-        num_cols=5,
-        row_spacing=80,
-        col_spacing=160,
-        x_spacers=[{"x": 2, "width": 45}, {"x": 4, "width": 45}],
-        x_zero=30,
-        y_zero=20,
-    )
-
-
-class FormNewArticle(FlaskForm):
-    article_name = StringField("Article Name", validators=[Length(max=50)])
-    article_description = TextAreaField(
-        "Article Description", validators=[Length(max=255)]
-    )
-
-    weight = IntegerField("Weight")
-    picture = StringField("Picture", validators=[Length(max=30)])
-
 
 def allowed_file(filename):
     return (
@@ -425,18 +213,6 @@ def new_article():
                 flash("Allowed file types are png, jpg, jpeg, bmp")
                 return redirect(request.url)
 
-            """ new = Article(
-                article_name=req["article_name"],
-                article_description=req["article_description"],
-                category=req["category"],
-                groupes=req["groupes"],
-                weight=int(req["weight"]),
-                picture=filename,
-            )
-
-            db.session.add(new)
-            db.session.commit() """ # Wird bei add_article gemacht
-
             return 200
 
         return 400
@@ -529,284 +305,6 @@ def db_to_list(db_output):
     return articles_list
 
 
-@main.route("/manage_db", methods=["GET"])
-def manage_db():
-    return render_template("manage_db.html")
-
-
-def search_record_by_value(value, model, column_name):
-    # Query the database for the record matching the value in the specified column
-    records = model.query.filter(getattr(model, column_name) == value)
-    return records
-
-
-@main.route("/manage_db/articles", methods=["GET", "POST"])
-def edit_articles_db():
-    if request.method == "POST":
-        # logcb(request)
-        if request.data:  # check if request is json
-            log.info(request.get_json())
-            req = request.get_json()
-
-            if "delete" in req.keys():
-                log.info("")
-                article = Article.query.get(int(req["delete"]))
-                img = article.picture
-
-                if article:
-                    file = os.path.join(Config.UPLOAD_FOLDER, img)
-                    if os.path.exists(file):
-                        pass
-                        os.remove(file)
-                    db.session.delete(article)  # Delete the article from the session
-                    db.session.commit()
-                    articles_search = Article.query.limit(Config.QUERY_LIMIT_SOFT).all()
-                    return get_template_attribute(
-                        "macros_for_manage_articles.html", "render_article_table"
-                    )(articles_search)
-                else:
-                    return "400"
-
-            if "changes" in req.keys():
-                changes = req["changes"]
-                log.info(f"changes {type(changes)}: {changes}")
-                for change in changes:
-                    log.info(f"change {type(change)}: {change}")
-                    id = list(change.keys())[0]
-                    # logcb(f'id {type(id)}: {id}')
-                    record = Article.query.get_or_404(int(id))
-
-                    column_name = list(change[id].keys())[0]
-
-                    if hasattr(record, column_name):
-                        # Update the text in the column dynamically
-                        setattr(record, column_name, change[id][column_name])
-
-                        # Commit the changes to the database
-                        db.session.commit()
-
-                        articles_search = Article.query.limit(Config.QUERY_LIMIT_SOFT).all()
-
-                    else:
-                        return jsonify({"error": "Column does not exist"}), 400
-                return get_template_attribute(
-                    "macros_for_manage_articles.html", "render_article_table"
-                )(articles_search)
-
-            if "search" in req.keys():
-                search = req["search"]
-                column_name = list(search.keys())[0]
-                value = search[column_name]
-
-                column = getattr(Article, column_name)
-
-                results = Article.query.filter(column.like("%" + value + "%"))
-
-                return get_template_attribute(
-                    "macros_for_manage_articles.html", "render_article_table"
-                )(results)
-
-    articles_search = Article.query.limit(Config.QUERY_LIMIT_SOFT).all()
-
-    return render_template("manage_articles.html", articles=articles_search)
-
-
-@main.route("/manage_db/stock", methods=["GET", "POST"])
-def edit_stocks_db():
-
-    stock = Stock.query.limit(10).all()
-
-    return render_template("manage_stock.html", stocks=stock)
-
-
-@main.route("/manage_db/categories", methods=["GET", "POST"])
-def edit_categories_db():
-
-    if request.method == "POST":
-        log.info(request.form)
-        if request.data:  # check if request is json
-            log.info(request.get_json())
-            req = request.get_json()
-
-            if "new_cat" in req.keys():
-                n_c = req["new_cat"]
-                log.info(n_c)
-
-                prefs = n_c["prefixes"]
-                log.info(prefs)
-
-                # if not isinstance(prefs, list):
-                #    flash("Prefixes in wrong format must be ['m', 'µ']")
-
-                #    cats = Categories.query.all()
-                #    return get_template_attribute("macros_for_manage_categories.html", "render_categories_table")(cats)
-
-                new_cat = Categories(
-                    title=n_c["title"], unit=n_c["unit"], prefixes=prefs
-                )
-
-                db.session.add(new_cat)
-                db.session.commit()
-
-                cats = Categories.query.all()
-                return get_template_attribute(
-                    "macros_for_manage_categories.html", "render_categories_table"
-                )(cats)
-
-            if "delete" in req.keys():
-                del_title = req["delete"]
-                cat = Categories.query.get(del_title)
-
-                db.session.delete(cat)
-                db.session.commit()
-
-                cats = Categories.query.all()
-                return get_template_attribute(
-                    "macros_for_manage_categories.html", "render_categories_table"
-                )(cats)
-
-            if "changes" in req.keys():
-                changes = req["changes"]
-                log.info(f"changes {type(changes)}: {changes}")
-                for change in changes:
-
-                    title = list(change.keys())[0]
-
-                    record = Categories.query.get_or_404(title)
-
-                    column_name = list(change[title].keys())[0]
-
-                    if hasattr(record, column_name):
-                        # Update the text in the column dynamically
-                        setattr(record, column_name, change[title][column_name])
-
-                        # Commit the changes to the database
-                        db.session.commit()
-                        cats = Categories.query.all()
-
-                    else:
-                        return jsonify({"error": "Column does not exist"}), 400
-
-                return get_template_attribute(
-                    "macros_for_manage_categories.html", "render_categories_table"
-                )(cats)
-
-    cats = Categories.query.all()
-
-    return render_template("manage_categories.html", cats=cats)
-
-
-@main.route("/manage_db/groupes", methods=["GET", "POST"])
-def edit_groupes_db():
-
-    if request.method == "POST":
-        log.info(request.form)
-        if request.data:  # check if request is json
-            log.info(request.get_json())
-            req = request.get_json()
-
-            if "new_prim_group" in req.keys():
-                logcb(req["new_prim_group"])
-                new_p_g = PrimaryGroup(title=req["new_prim_group"])
-
-                db.session.add(new_p_g)
-                db.session.commit()
-
-                prim_groupes = PrimaryGroup.query.all()
-
-                return get_template_attribute(
-                    "macros_for_manage_groupes.html", "render_prim_groupes_table"
-                )(prim_groupes)
-
-            if "new_sec_group" in req.keys():
-                prim_g = req["new_sec_group"]["primary_group"]
-                sec_g = req["new_sec_group"]["secondary_group"]
-
-                new_s_g = SecondaryGroup(prim_title=prim_g, title=sec_g)
-
-                db.session.add(new_s_g)
-                db.session.commit()
-
-                prim_groupes = PrimaryGroup.query.all()
-
-                return get_template_attribute(
-                    "macros_for_manage_groupes.html", "render_prim_groupes_table"
-                )(prim_groupes)
-
-            if "secs_for_prim" in req.keys():
-                prim_g = req["secs_for_prim"]
-
-                secs = SecondaryGroup.query.filter_by(prim_title=prim_g).all()
-                logcb(f"secs {type(secs)}: {secs}")
-                return get_template_attribute(
-                    "macros_for_manage_groupes.html", "secondars"
-                )(
-                    secs, prim_g
-                )  # prim_g falls noch keine untergruppen vorhanden
-
-            if "delete_prim" in req.keys():
-                del_title = req["delete_prim"]
-                gp = PrimaryGroup.query.get(del_title)
-
-                db.session.delete(gp)
-                db.session.commit()
-
-                prim_groupes = PrimaryGroup.query.all()
-
-                return get_template_attribute(
-                    "macros_for_manage_groupes.html", "render_prim_groupes_table"
-                )(prim_groupes)
-
-            if "changes" in req.keys():
-                changes = req["changes"]
-
-                # TODO
-                prim_groupes = PrimaryGroup.query.all()
-
-                return get_template_attribute(
-                    "macros_for_manage_groupes.html", "render_prim_groupes_table"
-                )(prim_groupes)
-
-    prim_groupes = PrimaryGroup.query.all()
-
-    return render_template("manage_groupes.html", prim_groupes=prim_groupes)
-
-@main.route("/manage_db/containers", methods=["GET", "POST"])
-def edit_containers_db():
-    if request.method == "POST":
-        log.info(request.form)
-        if request.data:  # check if request is json
-            log.info(request.get_json())
-            req = request.get_json()
-
-            if "new_cont" in req.keys():
-                try:
-                    new_cont = Container(
-                        stocks = req["new_cont"]['stocks'],
-                        barcode = req["new_cont"]['barcode'],
-                        current_location = req["new_cont"]['current_location'],
-                        #target_location = req["new_cont"]['target_location'],
-                        size = req["new_cont"]['size']
-                    )
-
-                    db.session.add(new_cont)
-                    db.session.commit()
-                except Exception as e:
-                    flash("Error creating container")
-            
-            if "changes" in req.keys():
-                # TODO: 
-                flash("Not implemented")
-
-                return get_template_attribute("macros_for_containers.html", "render_containers")(containers.query.limit(Config.QUERY_LIMIT_SOFT).all)
-                
-
-    containers = Container.query.limit(Config.QUERY_LIMIT_SOFT).all()
-
-    return render_template("manage_containers.html", containers = containers)
-
-
-
 def search_articles_db_groupes(group_names):
     if isinstance(group_names, str):
         # Search for articles where the first category matches the group name
@@ -867,11 +365,27 @@ def search_articles_db_interaction():
                 if ("attributes" in search.keys()):
                     #TODO
                     pass
+            
+            if "fancy_query" in req.keys():
+                query = req["fancy_query"]
+                #with main.test_client() as client:
+    
+                data_list = search_query(query)
+
+                ids = [sublist[1] for sublist in data_list]
+
+                # Construct a custom SQL query to retrieve elements from the database table
+                # and sort them based on the order of IDs in the 'ids' list
+                results = Article.query.filter(Article.id.in_(ids)).order_by(
+                    db.func.field(Article.id, *ids)
+                ).all()
+
+                return get_template_attribute("macros_for_search_articles.html", "display_field")(results)
 
 
         return 400
 
-    f_ten = Article.query.limit(10).all()
+    f_ten = Article.query.limit(Config.QUERY_LIMIT_SOFT).all()
 
     return get_template_attribute("macros_for_search_articles.html", "display_field")(f_ten)
 
@@ -892,6 +406,30 @@ def add_stock():
                 #TODO:
                 random_container = Container.query.order_by(func.random()).first()
                 return jsonify({"status_message": "random", "code": str(random_container.barcode)})
+            
+            if "gen_stock" in req.keys():
+                logcb(req['gen_stock'])
+                return get_template_attribute("macros_for_add_stock.html", "generated_stock")(
+                    Article.query.get_or_404(int(req["gen_stock"]["article"])).article_name,
+                    req["gen_stock"]["quantity"],
+                    Article.query.get_or_404(int(req["gen_stock"]["article"])).picture,
+                    req["gen_stock"]["barcode"]
+
+                )
+
+            if "add_stock" in req.keys():
+                dt = req["add_stock"]
+                new = Stock(
+                    container = db.session.query(Container).filter_by(barcode=dt['barcode']).first().id,
+                    article = dt['article'],
+                    quantity = dt['quantity']
+                )
+
+                db.session.add(new)
+                db.session.commit()
+                return "Sucsess"
+
+
 
     return render_template("add_stock.html")
 
@@ -903,29 +441,140 @@ def add_container():
             req = request.get_json()
             if "get_barcode" in req.keys():
                 # TODO:
-                return randint(100000000, 1000000000 - 1)
+                return str(randint(100000000, 1000000000 - 1))
             
             if "add_container" in req.keys():
                 bc = req['add_container']["barcode"]
                 size = req['add_container']["size"]
+                exists = db.session.query(Container).filter_by(barcode=bc).first() is not None
+
+                if not exists:
+                    new_cont = Container(
+                        barcode = bc,
+                        size = size,
+                        current_location = 0
+                    )
+
+                    db.session.add(new_cont)
+                    db.session.commit()
+
+                    return "Successfully added"
                 
+                else:
+                    return "Barcode already exists"
+            
+
     return render_template("add_container.html")
 
+import xml.etree.ElementTree as ET
+
+@main.route("/add_area", methods=["GET", "POST"])
+def add_area():
+    if request.method == "POST":
+        log.info(request.form)
+        log.info(request.files)
+        if "gen_stuff" in request.form.keys():
+            if 'file' in request.files.keys():
+                log.info(f'request.files {type(request.files)}: {request.files}')
+                file = request.files['file']
+
+                if file.filename == '':
+                    return jsonify({'error': 'No selected file'})
+
+                file_contents = file.read().decode('utf-8')
+                log.info(f'file_contents {type(file_contents)}: {file_contents}')
+                try:
+                    xml_root = ET.fromstring(file_contents)
+                except Exception as e:
+                    return e
+                
+                num_rows = int(xml_root.findall("gen_data")[0].attrib['num_rows'])
+                num_cols = int(xml_root.findall("gen_data")[0].attrib['num_cols'])
+                title = xml_root.attrib['title']
+
+                # Initialize variables to track the lowest and highest x and y values
+                lowest_x = float('inf')
+                highest_x = float('-inf')
+                lowest_y = float('inf')
+                highest_y = float('-inf')
+
+                total_locations = 0
+                for row in xml_root.findall('row'):
+                    for location in row.findall('location'):
+                        x = float(location.attrib['x'])
+                        y = float(location.attrib['y'])
+                        total_locations += 1
+
+                        lowest_x = min(lowest_x, x)
+                        highest_x = max(highest_x, x)
+                        lowest_y = min(lowest_y, y)
+                        highest_y = max(highest_y, y)
+                
+                data = {"num_rows": num_rows, "num_cols": num_cols, "title": title, "num_locations": total_locations, "min": f"{lowest_x, lowest_y}", "max": f"{highest_x, highest_y}"}
+                log.info(f'data {type(data)}: {data}')
+
+                return get_template_attribute("macros_for_add_area.html", "area_stats")(data)
+
+            else:
+                return jsonify({'error': 'No file part'})
+            
+        if "add_all" in request.form.keys():
+            if 'file' in request.files.keys():
+                log.info(f'request.files {type(request.files)}: {request.files}')
+                file = request.files['file']
+
+                if file.filename == '':
+                    return jsonify({'error': 'No selected file'})
+
+                file_contents = file.read().decode('utf-8')
+                log.info(f'file_contents {type(file_contents)}: {file_contents}')
+                try:
+                    xml_root = ET.fromstring(file_contents)
+                except Exception as e:
+                    return e
+
+                area_name = xml_root.attrib['title']
+                log.info(f'area_name {type(area_name)}: {area_name}')
+
+                new_area = Area(name=area_name, allocated_cont = 0)
 
 
+                db.session.add(new_area)
+                db.session.commit()
+
+
+                total_locations = 0
+                for row in xml_root.findall('row'):
+                    for location in row.findall('location'):
+                        
+                        new_location = Location(
+                            area = new_area.id,
+                            category = location.attrib['category'], 
+                            occupation_status = False, 
+                            size = "BM",  # * Set as needed
+                            position = {"x": int(location.attrib['x']), "y": int(location.attrib['y']), "z": 0}  
+                        )
+                        total_locations += 1
+
+                        db.session.add(new_location)
+
+                # Commit the changes to the database
+                new_area.max_cont = total_locations
+
+                db.session.commit()
+                
+                return jsonify("Worx")
+
+    return render_template("add_area.html")
 
 @main.route("/del")
 def delete_data():
     try:
-        db.session.query(Stock).delete()
-        db.session.query(Container).delete()
-        db.session.query(Location).delete()
         db.session.query(Area).delete()
-        db.session.query(Article).delete()
 
         # This SQL command resets the auto-increment counter for the table to 1
-        for table in ["stock", "container", "location", "area", "article"]:
-            db.session.execute(text(f"ALTER TABLE {table} AUTO_INCREMENT = 1"))
+        for table in ["area"]:
+            db.session.execute(text(f"ALTER TABLE {table} AUTO_INCREMENT = 0"))
             pass
 
         db.session.commit()
@@ -940,4 +589,5 @@ def delete_data():
 if __name__ == "__main__":
     import __init__
 
-    __init__.create_app()
+    app = __init__.create_app()
+    app.run(debug=True, host="0.0.0.0", port=5000)

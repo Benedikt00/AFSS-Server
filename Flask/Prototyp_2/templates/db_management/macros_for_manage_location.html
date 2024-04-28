@@ -1,21 +1,28 @@
-{% macro render_categories_table(categorys) %}
-
-<div id="category_table">
+{% macro render_locations(locations) -%}
+    
+<div id="location_table">
 
 <table>
     <thead>
-        <th>Name</th>
-        <th>Unit</th>
-        <th>Prefixes</th>
-        <th><button onclick="new_cat()" id="add_button">+</button></th>
+        <td></td>
+        <th>area</th>
+        <th>category</th>
+        <th>occupation_status</th>
+        <th>Size</th>
+        <th>position</th>
+
+
     </thead>
-    <tbody id="category_table_body">
-    {% for Category in categorys %}
+    <tbody id="locations_table_body">
+    {% for loc in locations %}
     <tr>
-        <td ondblclick="to_input(this, 50, '{{ Category.title }}', 'title')">{{Category.title}}</td>
-        <td ondblclick="to_input(this, 10, '{{ Category.title }}', 'unit')">{{Category.unit}}</td>
-        <td ondblclick="to_input(this, 100, '{{ Category.title }}', 'prefixes')" >{{Category.prefixes}}</td>
-        <td><button onclick="delete_cat('{{Category.title}}')">del</button></td>
+        <td>{{loc.id}}</td>
+        <td {# ondblclick="to_input(this, 20, '{{ loc.id }}', 'area', true)" #}>{{loc.area}}</td>
+        <td ondblclick="to_input(this, 20, '{{ loc.id }}', 'category', true)">{{loc.category}}</td>
+        <td ondblclick="to_input(this, 5, '{{ loc.id }}', 'occupation_status', true)">{{loc.occupation_status}}</td>
+        <td ondblclick="to_input(this, 10, '{{ loc.id }}', 'size', true)">{{loc.size}}</td>
+
+        
     </tr>
     {% endfor %}
     </tbody>
@@ -34,6 +41,11 @@
         {% endwith %}
     </div>
 </div>
+
+{%- endmacro %}
+
+{% macro js() -%}
+
 <script>
 
     var activeInput = null; // Variable to keep track of active input
@@ -44,50 +56,18 @@
 
     var changes = []
 
-    function new_cat() {
-        var newRow = document.createElement('tr');
-        newRow.innerHTML = `
-        <td><input type="text" name="title"></td>
-        <td><input type="text" name="unit"></td>
-        <td><input type="text" name="prefixes"></td>
-        <td><button onclick="saveNewCategory(this)">Save</button></td>
-    `;
-        document.getElementById('category_table_body').insertBefore(newRow, document.getElementById('category_table_body').firstChild);
-    
-        document.getElementById("add_button").hidden = true;
-    }
 
     function submit_changes() {
-        sendData({ "changes": changes }, set_cats)
+        sendData({ "changes": changes }, set_areas)
     }
 
-    function delete_cat(id){
-        console.log("del")
-        sendData({"delete": id}, set_cats)
-    }
-
-    function saveNewCategory(button) {
-
-        var newRow = button.parentNode.parentNode;
-
-        var title = newRow.querySelector('input[name="title"]').value;
-        var unit = newRow.querySelector('input[name="unit"]').value;
-        var prefixes = newRow.querySelector('input[name="prefixes"]').value;
-
-    sendData({"new_cat": {"title": title, "unit": unit, "prefixes": prefixes}}, set_cats)
-
-        newRow.parentNode.removeChild(newRow);
-        document.getElementById("add_button").hidden = false;
-
-    }
-
-    function set_cats(response) {
-        document.getElementById('category_table').innerHTML = response
+    function set_areas(response) {
+        document.getElementById('mc_location').innerHTML = response
     }
 
     function sendData(data, callback) {
         var xhr = new XMLHttpRequest();
-        var url = "{{url_for('main.edit_categories_db')}}";
+        var url = "{{url_for('manage_db.edit_location_db')}}";
 
         xhr.open("POST", url, true);
         xhr.setRequestHeader("Content-Type", "application/json");
@@ -106,7 +86,7 @@
         xhr.send(jsonData);
     }
 
-    function to_input(el, max_len, id, categorie) {
+    function to_input(el, max_len, id, categorie, number) {
         // Check if there's an active input, close it if exists
         if (activeInput !== null) {
             close_input(activeInput);
@@ -114,12 +94,20 @@
         console.log(el)
 
         var val = el.innerHTML.trim(); // Trim whitespace
+        if (!number){
+        var inputHTML = "<input class=\"search_input\" type=\"number\" value=\"" + val + "\"/>";
+
+        }
+        else{
         var inputHTML = "<input class=\"search_input\" type=\"text\" value=\"" + val + "\" maxlen=\"" + max_len + "\"/>";
+
+        }
         el.innerHTML = inputHTML;
         console.log(val)
         // Set the active input to this one
         activeInput = el;
         activeId = id
+        console.log(activeId)
         activeCategory = categorie
         // Focus on the input field
         el.querySelector('input').focus();
@@ -163,4 +151,4 @@
 </script>
 
 
-{% endmacro %}
+{%- endmacro %}

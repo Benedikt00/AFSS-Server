@@ -2,13 +2,13 @@
 
 {% block title %}Manage Articles{% endblock %}
 {% block head %}
-<link rel="stylesheet" href="{{url_for('static', filename='manage_articles.css')}}">
+<link rel="stylesheet" href="{{url_for('static', filename='db_management/manage_articles.css')}}">
 {% endblock %}
 
 
 
 {% block content %}
-{% import 'macros_for_manage_articles.html' as macros %}
+{% import 'db_management/macros_for_manage_articles.html' as macros %}
 
     {{ macros.render_article_table(articles) }}
 

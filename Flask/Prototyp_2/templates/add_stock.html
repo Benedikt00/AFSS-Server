@@ -26,6 +26,9 @@
     <button><a href="{{ url_for('main.add_container') }}">Add new Container</a></button>
     <p>Quantity</p>
     <input type="number" id="input_quantity" value="1">
+    <button onclick="generate_stock()">Generate</button>
+</div>
+<div id="generated">
 </div>
 </div>
 
@@ -46,8 +49,29 @@
 
 <script>
 
+var barcode = null
+var quant = null
+var article = null
+
+function generate_stock(){
+    article = document.getElementById("input_id_stock").value
+    barcode = document.getElementById("input_number_container").value
+    quant = document.getElementById("input_quantity").value
+
+    sendData({"gen_stock": {"barcode": barcode, "quantity": quant, "article": article}}, set_gen_stock)
+}
+
+function set_gen_stock(req){
+    document.getElementById("generated").innerHTML = req
+}
+
 function read_id_from_sps(){
     sendData({"get_container_code": ""}, set_number_container)
+}
+
+function add_to_db(){
+    sendData({"add_stock": {"barcode": barcode, "quantity": quant, "article": article}}, set_gen_stock)
+
 }
 
 function set_number_container(data){

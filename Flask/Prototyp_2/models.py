@@ -19,6 +19,9 @@ class Area(db.Model):
     max_cont = db.Column(db.Integer)
     allocated_cont = db.Column(db.Integer)
 
+    def __repr__(self):
+        return f"<Area(id='{self.id}', name='{self.name}')>"
+
 class Location(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     area = db.Column(db.Integer, db.ForeignKey('area.id'))

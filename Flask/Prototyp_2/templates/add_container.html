@@ -17,6 +17,7 @@ Add Container
     <p>Barcode o. A.</p>
     <input id="barcode_inp" max="32">
     <button onClick="get_barcode()">Vom Wareneingang lesen</button>
+    <p>Größe</p>
     <input id="size_inp" max="10">
 
     <button onClick="generate_container()">Generate</button>
@@ -48,7 +49,7 @@ Add Container
     function add_container(){
         barcode = document.getElementById("barcode_inp").value
         size = document.getElementById("size_inp").value
-        sendData({"add_container": {"barcode": barcode, "size": size}})
+        sendData({"add_container": {"barcode": barcode, "size": size}}, set_status)
 
     }
 

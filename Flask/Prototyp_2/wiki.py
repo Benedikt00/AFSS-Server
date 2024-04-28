@@ -9,7 +9,7 @@ def wiki_index():
 
 @wiki.route('/software/faq')
 def software_faq():
-    return render_template("/wiki/faq.html")
+    return render_template("/wiki/sw_faq.html")
 
 @wiki.route('/software/doku')
 def software_doku():

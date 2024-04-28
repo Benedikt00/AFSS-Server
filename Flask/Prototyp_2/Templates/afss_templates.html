@@ -11,7 +11,9 @@
 
 <div class="generation_form">
     <h1>Hochregallager Visualizer</h1>
-    <form action="/storage_templates" method="POST" name="main">
+    <form action="{{url_for('afss_templates.storage_templates')}}" method="POST" name="main">
+        <label for="title">Titel</label>
+        <input type="text" id="title" name="title" value="Default" required>
         <label for="rows">Anzahl der Reihen:</label>
         <input type="number" id="rows" name="num_rows" value="{{ num_rows }}" required>
         <label for="cols">Anzahl der Spalten:</label>
@@ -69,8 +71,6 @@
     // Parse the cleaned string into JSON
     const parsedJSON = JSON.parse(dt);
 
-
-
     console.log(parsedJSON)
 
 
@@ -90,7 +90,7 @@
         // Add event listener to the box
         box.addEventListener('click', function () {
             // Send POST request
-            fetch('{{url_for('main.storage_templates')}}', {
+            fetch('{{url_for('afss_templates.storage_templates')}}', {
                 method: 'POST',
                 body: JSON.stringify({ "xy": { id_x, id_y } }),
                 headers: {
@@ -128,7 +128,7 @@
         // Add event listener to the box
         box.addEventListener('click', function () {
             // Send POST request
-            fetch('{{ url_for('main.storage_templates') }}', {
+            fetch('{{ url_for('afss_templates.storage_templates') }}', {
                 method: 'POST',
                 body: JSON.stringify({ "xy": { id_x, id_y } }),
                 headers: {
@@ -242,7 +242,7 @@
 
     function sendData(data) {
         var xhr = new XMLHttpRequest();
-        var url = "{{url_for('main.storage_templates')}}";
+        var url = "{{url_for('afss_templates.storage_templates')}}";
 
         xhr.open("POST", url, true);
         xhr.setRequestHeader("Content-Type", "application/json");
