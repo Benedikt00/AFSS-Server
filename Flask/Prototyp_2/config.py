@@ -27,7 +27,8 @@ class Config():
         QUERY_LIMIT_SOFT = 10
         SECRET_KEY = "f@ctory"
         ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', "webp"}
-        UPLOAD_FOLDER = r"C:\Users\bsimb\HTL Mössingerstrasse\AFSS-automatic-factory-storage-system - General\Software\AFSS-Server\Flask\Prototyp_2\Static\product_pictures"
+        UPLOAD_FOLDER_PROD_PIC = r"C:\Users\bsimb\HTL Mössingerstrasse\AFSS-automatic-factory-storage-system - General\Software\AFSS-Server\Flask\Prototyp_2\Static\product_pictures"
+        UPLOAD_FOLDER = r"C:\Users\bsimb\HTL Mössingerstrasse\AFSS-automatic-factory-storage-system - General\Software\AFSS-Server\Flask\Prototyp_2\Static\images"
         MYSQL_PASSWORD = "factory"
         MYSQL_DB = "db_v1"
         MYSQL_USER = "root"

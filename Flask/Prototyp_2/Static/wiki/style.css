@@ -1,0 +1,44 @@
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+
+}
+
+#content {
+    margin-left: 280px;
+}
+.sidebar {
+    height: 100%;
+    width: 250px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    
+    background-color: #64757f;
+    padding-top: 20px;
+    overflow-x: hidden;
+    transition: 0.5s;
+    padding-bottom: 20px;
+}
+.sidebar a {
+    padding: 10px 20px;
+    text-decoration: none;
+    font-size: 18px;
+    /* color: #94040a; */
+    color: white;
+    display: block;
+    transition: 0.3s;
+}
+.sidebar a:hover {
+    background-color: #94040a;
+}
+.category {
+    padding-left: 20px;
+}
+.category .submenu {
+    display: none;
+    padding-left: 20px;
+}
+.category.active .submenu {
+    display: block;
+}

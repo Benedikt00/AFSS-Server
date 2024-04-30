@@ -41,7 +41,7 @@ def logcb(var):
 
 afss_templates = Blueprint('afss_templates', __name__)
 
-TEMP_FILE_PATH = "./Prototyp_2/storage_templates/temp.xml"
+TEMP_FILE_PATH = "./storage_templates/temp.xml"
 
 
 @afss_templates.route("/storage_templates", methods=["GET", "POST"])

@@ -26,6 +26,10 @@
 
 
     {{macros.search_js()}}
-
+<script>
+    function func_for_button_press(id){
+        window.location.replace("{{url_for('main.order_article', id = '')}}" + id);
+    }
+</script>
 
 {% endblock js %}

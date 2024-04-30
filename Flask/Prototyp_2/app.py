@@ -223,9 +223,13 @@ def new_article():
 
     return render_template("new_article.html", groupes=groupes, categories=categories)
 
+@main.route('/get_image_product/<image_name>')
+def get_image_product(image_name):
+    #logcb(f"{Config.UPLOAD_FOLDER} {image_name}  {os.path.join(Config.UPLOAD_FOLDER, image_name)}")
+    return send_from_directory(Config.UPLOAD_FOLDER_PROD_PIC, image_name)
+
 @main.route('/get_image/<image_name>')
 def get_image(image_name):
-    #logcb(f"{Config.UPLOAD_FOLDER} {image_name}  {os.path.join(Config.UPLOAD_FOLDER, image_name)}")
     return send_from_directory(Config.UPLOAD_FOLDER, image_name)
 
 @main.route("/add_article", methods=["POST"])
@@ -393,6 +397,63 @@ def search_articles_db_interaction():
 @main.route("/search_articles", methods=["GET", "POST"])
 def search_articles():
     return render_template("search_articles.html")
+
+@main.route("/order_article/<id>", methods=["GET", "POST"])
+def order_article(id):
+    
+    article = Article.query.get_or_404(id)
+
+    stocks = db.session.query(Stock).filter_by(article = article.id)
+
+    if not stocks.first():
+        stocks = ""
+
+    return render_template("order_article.html", article = article, stocks=stocks)
+
+@main.route("/order_article/api", methods=["POST"])
+def order_api():
+    if request.data:
+        req = request.get_json()
+
+        if "order" in req.keys():
+            logcb(req)
+            o_stock = int(req['order']['stock'])
+            o_quant = int(req['order']['quantity'])
+
+            stock = Stock.query.get_or_404(o_stock)
+
+            if not o_stock:
+                return "choose stock"
+
+            if stock.quantity < o_quant:
+                return "Quantity to high"
+            
+            # TODO
+
+            return "Added to stack (coming soon)"
+        
+        if "add_to_cart" in req.keys():
+            logcb(req['add_to_cart'])
+
+            o_stock = int(req['order']['stock'])
+            o_quant = int(req['order']['quantity'])
+
+            stock = Stock.query.get_or_404(o_stock)
+
+            if not stock:
+                return "choose stock"
+
+            if stock.quantity < o_quant:
+                return "Quantity to high"
+            
+            new_inst = StackPrioAfss(
+                stock = stock,
+                container = Container.query,
+            )
+
+
+            return "Added to cart"
+
 
 
 @main.route("/add_stock", methods=['GET', "POST"])

@@ -7,6 +7,7 @@
             <a href="#">Flask Architektur</a>
             <a href="#">Docker</a>
             <a href="#">SPS Kommunikation</a>
+            <a href="{{ url_for('wiki.software_definitions')}}">Software Definitionen</a>
         </div>
     </div>
     <div class="category">
@@ -34,45 +35,5 @@
 
 
 <style>
-    body {
-        margin: 0;
-        font-family: Arial, sans-serif;
-    }
-
-    #content {
-        margin-left: 250px;
-    }
-    .sidebar {
-        height: 100%;
-        width: 250px;
-        position: fixed;
-        top: 0;
-        left: 0;
-        background-color: #333;
-        padding-top: 20px;
-        overflow-x: hidden;
-        transition: 0.5s;
-        padding-bottom: 20px;
-    }
-    .sidebar a {
-        padding: 10px 20px;
-        text-decoration: none;
-        font-size: 18px;
-        color: white;
-        display: block;
-        transition: 0.3s;
-    }
-    .sidebar a:hover {
-        background-color: #555;
-    }
-    .category {
-        padding-left: 20px;
-    }
-    .category .submenu {
-        display: none;
-        padding-left: 20px;
-    }
-    .category.active .submenu {
-        display: block;
-    }
+   
 </style>

@@ -94,3 +94,26 @@ class TermFrequencyList(db.Model):
 
     def __repr__(self):
         return f"<InverseDocumentTableSearch(id='{self.id}', terms='{self.terms}')>"
+
+class StackAfss(db.Model):
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    stock = db.Column(db.Integer)
+    container = db.Column(db.Integer)
+    quantity = db.Column(db.Integer)
+    loc_now = db.Column(db.Integer)
+    loc_goal = db.Column(db.Integer)
+
+class StackPrioAfss(db.Model):
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    stock = db.Column(db.Integer)
+    container = db.Column(db.Integer)
+    quantity = db.Column(db.Integer)
+    loc_now = db.Column(db.Integer)
+    loc_goal = db.Column(db.Integer)
+
+class Cart(db.Model):
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    stock = db.Column(db.Integer)
+    container = db.Column(db.Integer)
+    quantity = db.Column(db.Integer)
+

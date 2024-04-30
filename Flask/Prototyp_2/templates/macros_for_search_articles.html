@@ -178,7 +178,7 @@
         </thead>
         {% for article in articles %}
         <tr>
-                <td id=""><img src="{{ url_for('main.get_image', image_name=article.picture ) }}"></th>
+                <td id=""><img src="{{ url_for('main.get_image_product', image_name=article.picture ) }}"></th>
 
                 <td id="">{{ article.id }}</th>
                 <td id="">
@@ -262,6 +262,8 @@
 {% macro search_js() %}
 
 <script>
+
+        
 
         function search_fancy(){
                 query = document.getElementById("fancy_search_input").value

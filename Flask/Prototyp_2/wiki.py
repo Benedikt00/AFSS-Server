@@ -14,3 +14,7 @@ def software_faq():
 @wiki.route('/software/doku')
 def software_doku():
     return 200
+
+@wiki.route('/software/definitions')
+def software_definitions():
+    return render_template("wiki/sw_definitionen.html")

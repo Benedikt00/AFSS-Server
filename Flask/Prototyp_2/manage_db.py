@@ -128,6 +128,32 @@ def edit_articles_db():
 
 @manage_db.route("/stock", methods=["GET", "POST"])
 def edit_stocks_db():
+    if request.method == "POST":
+        if request.data:
+            req = request.get_json()
+
+            if "changes" in req.keys():
+                log.info(req["changes"])
+
+                changes = req["changes"]
+                log.info(f"changes {type(changes)}: {changes}")
+                for change in changes:
+                    id = list(change.keys())[0]
+                    record = Stock.query.get_or_404(int(id))
+
+                    column_name = list(change[id].keys())[0]
+
+                    if hasattr(record, column_name):
+                        setattr(record, column_name, change[id][column_name])
+                        log.info(f'record {type(record)}: {record}')
+
+                        db.session.commit()
+                    else:
+                        log.info("No appropriate column found")
+
+                stocks = Stock.query.all()
+                return get_template_attribute("db_management/macros_for_manage_stock.html", "render_stocks")(stocks)
+
 
     stock = Stock.query.limit(10).all()
 
@@ -254,7 +280,7 @@ def edit_groupes_db():
                 secs = SecondaryGroup.query.filter_by(prim_title=prim_g).all()
                 logcb(f"secs {type(secs)}: {secs}")
                 return get_template_attribute(
-                    "macros_for_manage_groupes.html", "secondars"
+                    "db_management/macros_for_manage_groupes.html", "secondars"
                 )(
                     secs, prim_g
                 )  # prim_g falls noch keine untergruppen vorhanden
