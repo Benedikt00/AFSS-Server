@@ -20,7 +20,7 @@ def stack_test():
 
     end = Location.query.get_or_404(0)
     print(stack.show_stack())
-    stack.insert_bmo(start, end)
+    stack.generate_path(start, end)
     print(type(Location.query.get_or_404(30)))
 
     print(stack.show_stack())

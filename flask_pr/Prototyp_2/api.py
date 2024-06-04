@@ -39,12 +39,6 @@ def make_move_instruction(entry):
     current_location = Location.query.get_or_404(loc_now)
     target_location = Location.query.get_or_404(loc_goal)
 
-"""
-AFSS-Instructions:
-Move: (Gerät, XYZ_1, XYZ_2)
-Einlagern (EL): () -> {"inst": "prep_store", "dependency": -1}
-"""
-
 
 def get_empty_location(cont):
     filtered_locations = db.session.query(Location).filter_by(size=cont.size, occupation_status=False).all()
@@ -61,20 +55,27 @@ def afss_stack():
         req = request.get_json()
 
         #Storage Interrupt
-        if ["afss_return_request"] in req.keys():
-            pass
+        if "afss_return_request" in req.keys():
+            afss_stack.request_box_return()
+            return "200"
 
         #Storage Identification
-        if ["afss_return_data"] in req.keys():
+        if "afss_return_data" in req.keys():
             code = req["afss_return"]["barcode"]
             cont = Container.query.filter_by(barcode = code).first()
             if not cont:
                 return "400: Container not Found"
             
-
+            afss_stack.insert_storing_operation(0, get_empty_location(cont))
+            
             return "200" #TODO
         
+        if "next_bmos" in req.keys():
+            return jsonify(afss_stack.get_current_bmos(req["next_bmos"]))
         
+        if "new_operations" in req.keys():
+            for pair in req["new_operations"]:
+                afss_stack.norm_storing_operation(pair[0], pair[1])
     
     if request.method == "GET":
         return jsonify("")

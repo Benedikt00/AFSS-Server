@@ -27,7 +27,6 @@ class instruction_stack_afss():
         self.shifter_clearance = - 250
 
 
-
     def create_stack(self):
         self.stack = {self.fb: []}
         for area in self.areas.keys():
@@ -35,7 +34,7 @@ class instruction_stack_afss():
         
         for area in self.areas.keys():
             self.stack[str(int(area) + self.shifter_coeff)] = []
-    
+
 
     def get_max_value_in_stack(self, key = None):
         max_value = None
@@ -57,18 +56,29 @@ class instruction_stack_afss():
         self.instruction_num = 1
         self.done_instructions = [0]
         pass
-        
+
+
     def show_stack(self):
         strang = ""
         for x in self.stack.keys():
             strang += f"{x}: {self.stack[x]}\n"
 
         return strang
-    
+
+
     def is_location_in_afss(self, location):
         return str(location)  in self.areas.keys()
 
+
     def create_order(self, order: list, *, interrupt = False):
+        """Inserts the commants into the stack
+        
+        Keyword arguments:
+        order -- commands
+        interrupt -- if true, the order is put on priority list
+        Return: return_description
+        """
+        
         order_id = self.order_id
 
         for i, instruction in enumerate(order):
@@ -129,13 +139,13 @@ class instruction_stack_afss():
 
         self.order_id += 1
 
-    #Instruction: id, abhängig_von, order_id, aktion
 
     def get_FX0_for_area(self, area):
         FX0 = db.session.query(Location).filter_by(area=area, category = "SF").first()
         if not FX0:
             raise Exception(f"No FX0 found for area: {area}")
         return FX0.position
+
 
     def get_current_orders(self):
         current_orders = []
@@ -145,19 +155,19 @@ class instruction_stack_afss():
         
         return current_orders 
 
+
     def pos_z_zero(pos):
         pos["z"] == 0
         return pos
 
-    def insert_bmo(self, start_location, end_location): #box moving operation
+
+    def generate_path(self, start_location, end_location): #box moving operation
 
         start_area = start_location.area
         end_area = end_location.area
 
         start_area_s = str(start_area)
         end_area_s = str(end_area)
-
-        
         
         if ((not self.is_location_in_afss(start_area)) or (not self.is_location_in_afss(end_area))):
             return False # not a afss job
@@ -189,7 +199,6 @@ class instruction_stack_afss():
 
                         {"MOV": {"area": self.fb, "pos": f_diff - self.shifter_clearance, "rel": [-2]}}]
                 
-                self.create_order(inst)
                 
             else: # afss to afss
                 end_xyz = end_location.position
@@ -199,7 +208,6 @@ class instruction_stack_afss():
                     {"MOV": {"area": start_area + self.shifter_coeff, "pos": 0, "rel": [0]}},
                     {"MOV": {"area": end_area, "pos": self.pos_z_zero(self.get_FX0_for_area(end_area)), "dir": 1, "rel": [-1]}},
 
-                    
                     {"MOV": {"area": start_area, "pos": self.get_FX0_for_area(start_area), "dir": -1, "rel": [-1, -2]}},
                     
                     {"MOV": {"area": start_area + self.shifter_coeff, "pos": self.shifters[start_area_s], "rel": [-1]}},
@@ -218,8 +226,6 @@ class instruction_stack_afss():
                     {"MOV": {"area": end_area, "pos": self.get_FX0_for_area(end_area), "dir": 1, "rel": [-1]}},
                     {"MOV": {"area": end_area, "pos": end_xyz, "dir": 1, "rel": [-1]}}
                     ]
-
-
 
         elif start_area == 0: #ends in afss area
 
@@ -240,16 +246,27 @@ class instruction_stack_afss():
                         {"MOV": {"area": end_area, "pos": self.get_FX0_for_area(end_area), "dir": 1, "rel": [-1]}},
 
                         {"MOV": {"area": end_area, "pos": end_xyz, "dir": 1, "rel": [-1]}}
-
+                        
                         ]
+                
+        return inst
+
 
     def request_box_return(self):
-        instruction = {"BR": {}}
-        self.create_order([instruction])
+        instruction = [{"BR": {}}]
+        order = self.create_order(instruction)
+        self.create_order(order, interrupt=True)
 
 
-    def insert_storing_operation(self):
-        pass
+    def insert_storing_operation(self, start_location, end_location):
+        path = self.generate_path(start_location, end_location)
+        order = self.create_order(path)
+        self.create_order(order, interrupt=True)
+
+    def norm_storing_operation(self, start_location, end_location):
+        path = self.generate_path(start_location, end_location)
+        order = self.create_order(path)
+        self.create_order(order)
 
     def has_lower_order_id(self, given_order_id):
         for key, instructions in self.stack.items():
@@ -257,7 +274,8 @@ class instruction_stack_afss():
                 if instruction['order_id'] < given_order_id:
                     return True
         return False
-    
+
+
     def get_lowest_order_id(self):
         lowest_order_id = float('inf')
 
@@ -267,14 +285,16 @@ class instruction_stack_afss():
                     lowest_order_id = instruction['order_id']
 
         return lowest_order_id
-    
+
+
     def has_order_id(self, order_id):
         for key, instructions in self.stack.items():
             for instruction in instructions:
                 if instruction['order_id'] == order_id:
                     return True
         return False
-    
+
+
     def get_and_delete_instruction(self, instruction_id):
         for key, instructions in self.stack.items():
             for i, instruction in enumerate(instructions):
@@ -283,6 +303,7 @@ class instruction_stack_afss():
                     removed_instruction = instructions.pop(i)
                     return removed_instruction
         return None  # If the instruction_id is not found
+
 
     def is_lowest_instruction(given_instruction, data_dict):
         lowest_instruction = None
@@ -296,6 +317,7 @@ class instruction_stack_afss():
 
         return given_instruction == lowest_instruction
 
+
     def get_current_bmos(self, executed_inst_id: int):
         
         executed_inst_id = int(executed_inst_id)
@@ -305,7 +327,7 @@ class instruction_stack_afss():
 
         interrupt_in_system = (self.interrupts_in_system != [])
 
-        logcb(f"interrupts:{self.interrupts_in_system}, {interrupt_in_system}")
+        logcb(f"interrupts: {self.interrupts_in_system}, {interrupt_in_system}")
         logcb(f"pending: {self.pending_instructions}")
         logcb(f"done: {self.done_instructions}\n\n")
 
@@ -323,8 +345,6 @@ class instruction_stack_afss():
 
             self.pending_instructions.remove(executed_inst)
             
-            
-
             # remove the instruction from stack
             for area, instructions in self.stack.items():
                 for instruction in instructions:
