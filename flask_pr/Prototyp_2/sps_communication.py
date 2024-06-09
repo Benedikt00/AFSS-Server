@@ -6,8 +6,10 @@ class sps_com():
         self.ip_address = ip_address
 
         self.session_token = 0
-
+        self.session_id = 1
         self.url = ip_address + "/api/jsonrpc"
+
+        self.com_db = "\"http_com\""
 
     def connect_to_sps(self, username, password):
         headers = {
@@ -15,7 +17,7 @@ class sps_com():
         }
 
         data = {
-            "id": "1",
+            "id": str(self.session_id),
             "jsonrpc": "2.0",
             "method": "Api.Login",
             "params": {
@@ -29,6 +31,7 @@ class sps_com():
             req = json.loads(response.content.decode('utf-8'))
             token = req["result"]["token"]
             self.session_token = token
+            self.session_id += 1
             return "OK: 200"
 
         except requests.exceptions.HTTPError as http_err:
@@ -48,13 +51,23 @@ class sps_com():
         req = json.loads(response.content.decode('utf-8'))
 
         return req
+    
+    def ses_id(self):
+        self.session_id += 1
+        return str(self.session_id - 1)
+
+    def enable_testmode(self):
+        return self.write_variable("DEBUG_MODE", True)
 
     def ping_sps(self):
-        data = {"jsonrpc":"2.0", "method":"Api.Ping", "id":1}
+        data = {"jsonrpc":"2.0", "method":"Api.Ping", "id": self.ses_id()}
         self.send_data_to_sps(data)
 
+
     def write_variable(self, var_name, value):
-        return "501"
+        data = {id: self.ses_id(), "jsonrpc": "2.0", "method": "PlcProgram.Write", "params": {"var": f"{self.ses_id}.{var_name}", "value": str(value)}}
+        req = self.send_data_to_sps(data)
+        return req
     
     def read_variable(self, var_name):
         pass
