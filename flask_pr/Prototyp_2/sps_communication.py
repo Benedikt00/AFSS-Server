@@ -65,9 +65,17 @@ class sps_com():
 
 
     def write_variable(self, var_name, value):
-        data = {id: self.ses_id(), "jsonrpc": "2.0", "method": "PlcProgram.Write", "params": {"var": f"{self.ses_id}.{var_name}", "value": str(value)}}
+        data = {"id": self.ses_id(), "jsonrpc": "2.0", "method": "PlcProgram.Write", "params": {"var": f"{self.com_db}.{var_name}", "value": str(value)}}
         req = self.send_data_to_sps(data)
         return req
     
     def read_variable(self, var_name):
         pass
+
+    def write_multiple_variables(self, var_dict):
+        das = []
+        
+        for key, val in var_dict.items():
+            das.append({"id": self.ses_id(), "jsonrpc": "2.0", "method": "PlcProgram.Write", "params": {"var": f"{self.com_db}.{key}", "value": str(val)}})
+        
+        req = self.send_data_to_sps(das)

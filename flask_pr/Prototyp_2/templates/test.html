@@ -3,9 +3,128 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Control Element with Draggable Box</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        #container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        #canvasContainer {
+            position: relative;
+            border: 1px solid black;
+        }
+        #canvas {
+            display: block;
+            background-color: #f0f0f0;
+        }
+        .controls {
+            margin-top: 10px;
+        }
+        .controls button {
+            margin: 5px;
+        }
+        #position {
+            margin-top: 10px;
+        }
+    </style>
 </head>
 <body>
-    
+    <div id="container">
+        <div id="canvasContainer">
+            <canvas id="canvas" width="500" height="400"></canvas>
+        </div>
+        <div class="controls">
+            <button id="left">Left</button>
+            <button id="right">Right</button>
+            <button id="up">Up</button>
+            <button id="down">Down</button>
+        </div>
+        <div id="position">Position: (X: 50, Y: 50)</div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const positionDisplay = document.getElementById('position');
+        const box = { x: 50, y: 50, width: 50, height: 50 };
+        let isDragging = false;
+        let offsetX, offsetY;
+
+        function drawBox() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = 'red';
+            ctx.fillRect(box.x, box.y, box.width, box.height);
+        }
+
+        function updatePositionDisplay() {
+            positionDisplay.textContent = `Position: (X: ${box.x}, Y: ${box.y})`;
+        }
+
+        function onBoxRest() {
+            console.log(`Box has come to rest at position: (X: ${box.x}, Y: ${box.y})`);
+            // Here you can send the position to a server or perform other actions
+        }
+
+        function moveBox(dx, dy) {
+            box.x += dx;
+            box.y += dy;
+            box.x = Math.max(0, Math.min(box.x, canvas.width - box.width));
+            box.y = Math.max(0, Math.min(box.y, canvas.height - box.height));
+            drawBox();
+            updatePositionDisplay();
+            onBoxRest();
+        }
+
+        canvas.addEventListener('mousedown', function(e) {
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+
+            if (mouseX > box.x && mouseX < box.x + box.width && mouseY > box.y && mouseY < box.y + box.height) {
+                isDragging = true;
+                offsetX = mouseX - box.x;
+                offsetY = mouseY - box.y;
+            }
+        });
+
+        canvas.addEventListener('mousemove', function(e) {
+            if (isDragging) {
+                const rect = canvas.getBoundingClientRect();
+                const mouseX = e.clientX - rect.left;
+                const mouseY = e.clientY - rect.top;
+                box.x = mouseX - offsetX;
+                box.y = mouseY - offsetY;
+                box.x = Math.max(0, Math.min(box.x, canvas.width - box.width));
+                box.y = Math.max(0, Math.min(box.y, canvas.height - box.height));
+                drawBox();
+                updatePositionDisplay();
+            }
+        });
+
+        canvas.addEventListener('mouseup', function() {
+            if (isDragging) {
+                isDragging = false;
+                updatePositionDisplay();
+                onBoxRest();
+            }
+        });
+
+        document.getElementById('left').addEventListener('click', () => moveBox(-10, 0));
+        document.getElementById('right').addEventListener('click', () => moveBox(10, 0));
+        document.getElementById('up').addEventListener('click', () => moveBox(0, -10));
+        document.getElementById('down').addEventListener('click', () => moveBox(0, 10));
+
+        drawBox();
+        updatePositionDisplay();
+    </script>
 </body>
 </html>

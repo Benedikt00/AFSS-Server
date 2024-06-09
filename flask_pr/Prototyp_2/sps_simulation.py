@@ -35,16 +35,16 @@ def handle_jsonrpc():
         if method == 'echo':
             result = params  # Echo back the parameters as result
         
-        if method == 'Api.Login':
+        elif method == 'Api.Login':
             result = {"token": "46290"}
         
-        if method == "PlcProgram.Read":
-            pass
+        elif method == "PlcProgram.Read":
+            result = 501
 
-        if method == "PlcProgram.Write":
-            pass
+        elif method == "PlcProgram.Write":
+            result = {"sucsess": ""}
 
-        if method == "Api.Ping":
+        elif method == "Api.Ping":
             return "200"
         
         else:

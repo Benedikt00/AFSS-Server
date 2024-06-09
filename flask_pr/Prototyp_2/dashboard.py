@@ -36,6 +36,7 @@ def control_afss():
             req = request.get_json()
 
             if "connect_to_client" in req.keys():
+                logcb("Connect to client")
                 ip = req["connect_to_client"]["ip"]
                 #start_time = req["connect_to_client"]["start_time"]/1000
                 start_time = round(time.time()) 
@@ -56,10 +57,27 @@ def control_afss():
                 debug_connection.ping_sps()
                 return "200"
             
-            if "enable_testwindow" in req.keys():
+            if "enable_testmode" in req.keys():
+                logcb("testmode")
                 status = debug_connection.enable_testmode()
-                return get_template_attribute("hw_control/macros_for_afss_control.html", "testwindow")
-        
+                return get_template_attribute("hw_control/macros_for_afss_control.html", "testwindow")(status)
+
+            if "update_position" in req.keys():
+                logcb("update_position")
+                posis = req["update_position"]
+                x = posis["x"]
+                y = posis["y"]
+                z = posis["z"]
+                a = posis["a"] # ausfahrer
+                f = posis["f"] # förderband
+
+                debug_connection.write_variable("pos_x", x)
+                debug_connection.write_variable("pos_y", y)
+                debug_connection.write_variable("pos_z", z)
+                debug_connection.write_variable("pos_ausfahrer", a)
+                debug_connection.write_variable("pos_förderband", f)
+
+
     return render_template("hw_control/afss_control.html", ip = Config.CLIENT_SPS1_IP)
     
 

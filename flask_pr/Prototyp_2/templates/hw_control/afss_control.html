@@ -4,94 +4,263 @@
 
 {% block content %}
 
+<style>
+    #container_move {
+        width: 100%;
+        height: 100vh;
+        border: 1px solid #000;
+        position: relative;
+    }
+
+    #draggableBox {
+        width: 100px;
+        height: 100px;
+        background-color: red;
+        position: absolute;
+        cursor: pointer;
+    }
+</style>
+
 <div id="conf">
     <div>
-    <label>IP Address</label>
-    <input type="text" id="ipv4" name="ipv4" placeholder="https://xxx.xxx.xxx.xxx" value="{{ip}}"/>
+        <label>IP Address</label>
+        <input type="text" id="ipv4" name="ipv4" placeholder="https://xxx.xxx.xxx.xxx" value="{{ip}}" />
     </div>
 
     <div>
-    <label>Username</label>
-    <input id="username" type="text"  value="{{username}}"/>
-</div>
-<div>
-    <label>Password</label>
-    <input type="text" id="password" value="{{password}}"/>
-</div>
-<button onclick="connect_to_client()">Connect</button>
+        <label>Username</label>
+        <input id="username" type="text" value="{{username}}" />
+    </div>
+    <div>
+        <label>Password</label>
+        <input type="text" id="password" value="{{password}}" />
+    </div>
+    <button onclick="connect_to_client()">Connect</button>
 </div>
 
-<div id="connection_return_data"> </div>
+<div id="connection_return_data"></div>
+<div id="testwindow" style="display: none;">
+    <style>
+        #draw_container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
 
+        #canvasContainer {
+            position: relative;
+            width: 100%;
+            height: 50vh; /* Adjusted to fit within the viewport */
+            border: 1px solid black;
+        }
+
+        #canvas {
+            display: block;
+            background-color: #818181;
+        }
+
+        .controls {
+            margin-top: 10px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .controls button {
+            margin: 5px;
+        }
+
+        #position {
+            margin-top: 10px;
+            text-align: center;
+        }
+    </style>
+
+    <div id="draw_container">
+        <div id="canvasContainer">
+            <canvas id="canvas"></canvas>
+        </div>
+        <div class="controls">
+            <button id="left">Left</button>
+            <button id="right">Right</button>
+            <button id="up">Up</button>
+            <button id="down">Down</button>
+        </div>
+        <div id="position">Position: (X: 50, Y: 50)</div>
+    </div>
+</div>
 {% endblock %}
 
 {% block js %}
 <script>
 
-var con_established = false
 
-function connect_to_client(){
-    start_time = Date.now()
+    var z_achse = 0
+    var förderband = 0
+    var ausfahrer = 0
 
-    ip = document.getElementById("ipv4").value
+    var con_established = false;
 
-    creds = {
-        "username": document.getElementById("username").value,
-        "password": document.getElementById("password").value,
+    function connect_to_client() {
+        var start_time = Date.now();
+
+        var ip = document.getElementById("ipv4").value;
+
+        var creds = {
+            "username": document.getElementById("username").value,
+            "password": document.getElementById("password").value,
+        };
+
+        sendData({
+            "connect_to_client": { "start_time": start_time, "ip": ip, "creds": creds }
+        }, set_connection_return);
     }
 
-    sendData({
-        "connect_to_client": {"start_time": start_time, "ip": ip, "creds": creds}
-    }, set_connection_return)
+    const intervalID = setInterval(keep_con_alive, 110000);
 
-
-}
-
-const intervalID = setInterval(keep_con_alive, 110000) //unter 2 minuten
-
-
-function keep_con_alive(){
-    if (con_established){
-        sendData({"ping": ""}, function empty(){})
-    }
-}
-
-function enable_testmode(){
-    sendData({"enable_testmode": ""}, set_testwindow)
-}
-
-function set_testwindow(data){
-    document.getElementById("set_testwindow").innerHTML = data
-
-}
-
-function set_connection_return(data){
-    document.getElementById("connection_return_data").innerHTML = data
-    
-    if (document.getElementById("status_con").innerHTML == "200"){
-        con_established = true
-    }
-
-}
-
-function sendData(data, callback) {
-    var xhr = new XMLHttpRequest();
-    var url = "{{url_for('dashb.control_afss')}}";
-
-    xhr.open("POST", url, true);
-    xhr.setRequestHeader("Content-Type", "application/json");
-
-    xhr.onreadystatechange = function () {
-        if (xhr.readyState === 4 && xhr.status === 200) {
-            callback(xhr.responseText)  // 2/2 statdessen braucht man eine callback funkltion und muss das so klobig machen
+    function keep_con_alive() {
+        if (con_established) {
+            sendData({ "ping": "" }, function empty() {});
         }
-    };
+    }
 
-    var jsonData = JSON.stringify(data);
-    xhr.send(jsonData);
-}
+    function enable_testmode() {
+        sendData({ "enable_testmode": "" }, set_testwindow);
+    }
+
+    function set_testwindow(data) {
+        document.getElementById("testwindow").style.display = "block";
+        initializeCanvas(); // Ensure the canvas is initialized when the test window is shown
+    }
+
+    function set_connection_return(data) {
+        document.getElementById("connection_return_data").innerHTML = data;
+
+        if (document.getElementById("status_con").innerHTML == "200") {
+            con_established = true;
+        }
+    }
+
+    function sendData(data, callback) {
+        var xhr = new XMLHttpRequest();
+        var url = "{{url_for('dashb.control_afss')}}";
+
+        xhr.open("POST", url, true);
+        xhr.setRequestHeader("Content-Type", "application/json");
+
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState === 4 && xhr.status === 200) {
+                callback(xhr.responseText);  
+            }
+        };
+
+        var jsonData = JSON.stringify(data);
+        xhr.send(jsonData);
+    }
+
+    var canvas;
+    var ctx;
+    var positionDisplay;
+    var box = { x: 50, y: 50, width: 50, height: 50 };
+    var isDragging = false;
+    var offsetX, offsetY;
+
+    function initializeCanvas() {
+        canvas = document.getElementById('canvas');
+        ctx = canvas.getContext('2d');
+        positionDisplay = document.getElementById('position');
+
+        function resizeCanvas() {
+            canvas.width = canvasContainer.clientWidth;
+            canvas.height = canvasContainer.clientHeight;
+            drawBox();
+        }
+
+        function drawBox() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = 'red';
+            ctx.fillRect(box.x, box.y, box.width, box.height);
+            updatePositionDisplay();
+        }
+
+        canvas.addEventListener('mousedown', function(e) {
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+
+            if (mouseX > box.x && mouseX < box.x + box.width && mouseY > box.y && mouseY < box.y + box.height) {
+                isDragging = true;
+                offsetX = mouseX - box.x;
+                offsetY = mouseY - box.y;
+            }
+        });
+
+        canvas.addEventListener('mousemove', function(e) {
+            if (isDragging) {
+                const rect = canvas.getBoundingClientRect();
+                const mouseX = e.clientX - rect.left;
+                const mouseY = e.clientY - rect.top;
+                box.x = mouseX - offsetX;
+                box.y = mouseY - offsetY;
+                box.x = Math.max(0, Math.min(box.x, canvas.width - box.width));
+                box.y = Math.max(0, Math.min(box.y, canvas.height - box.height));
+                drawBox();
+            }
+        });
+
+        canvas.addEventListener('mouseup', function() {
+            if (isDragging) {
+                isDragging = false;
+                updatePositionDisplay();
+                onBoxRest();
+            }
+        });
+
+        function getPosition(x, y) {
+            console.log(`X: ${x}, Y: ${y}`);
+            // Here you can call other functions or perform actions with the x and y values
+        }
+
+        function updatePositionDisplay() {
+            positionDisplay.textContent = `Position: (X: ${box.x}, Y: ${box.y})`;
+        }
+
+        function onBoxRest() {
+            send_positions()
+        }
+
+        function send_positions(){
+            alla = {
+                "x": box.x,
+                "y": box.y,
+                "z": z_achse,
+                "a": ausfahrer,
+                "f": förderband,
+            }
+            sendData({"update_position": alla}, function empty(){})
+        }
+
+        function moveBox(dx, dy) {
+            box.x += dx;
+            box.y += dy;
+            box.x = Math.max(0, Math.min(box.x, canvas.width - box.width));
+            box.y = Math.max(0, Math.min(box.y, canvas.height - box.height));
+            drawBox();
+            updatePositionDisplay();
+            onBoxRest();
+        }
+
+        document.getElementById('left').addEventListener('click', () => moveBox(-10, 0));
+        document.getElementById('right').addEventListener('click', () => moveBox(10, 0));
+        document.getElementById('up').addEventListener('click', () => moveBox(0, -10));
+        document.getElementById('down').addEventListener('click', () => moveBox(0, 10));
+
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        drawBox();
+        updatePositionDisplay();
+    }
 
 </script>
 
 {% endblock %}
-
