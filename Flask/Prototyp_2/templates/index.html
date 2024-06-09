@@ -1,0 +1,18 @@
+{% extends "base_template.html" %}
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='index.css') }}">
+
+{% endblock %}
+{% block title %}
+Home
+{% endblock %}
+
+{% block content %}
+
+<h2>AFSS - The next gen storage Solution, now in HTL-Mössingerstrasse</h2>
+
+<img id="main_img" src="{{ url_for('main.get_image', image_name='howl_.png' ) }}" alt="">
+
+{% endblock %}
+
+

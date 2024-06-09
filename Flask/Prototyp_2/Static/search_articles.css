@@ -1,0 +1,52 @@
+#article_table img{
+    width: 50px;
+    height: 50px;
+}
+
+
+
+.prim_group:hover{
+    background-color: rgb(112, 112, 112);
+}
+
+.sec_title:hover {
+    background-color: rgb(112, 112, 112);
+
+}
+
+#selected_prim {
+    background-color: rgb(0, 85, 64);
+}
+
+#primary_groupes {
+    display: flex;
+    flex-direction: row;
+}
+
+.prim_group {
+    margin: 20px;
+}
+
+#secs_list{
+    display: flex;
+    flex-direction: row;
+}
+
+.sec_title {
+    margin: 20px;
+}
+
+#string_search {
+    display: flex;
+    flex-direction: row;
+}
+
+#string_search input{
+    max-height: 30px;
+    margin: 10px;
+}
+
+#checkboxes {
+    display: flex;
+    flex-direction: row;
+}

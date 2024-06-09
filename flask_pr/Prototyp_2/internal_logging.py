@@ -20,6 +20,3 @@ def logcb(var):
 
 def logcc(var):
     log.info(f"{type(var)}: {bcolors.OKCYAN} {var} {bcolors.ENDC}")
-
-def logcr(var):
-    log.info(f"{type(var)}: {bcolors.WARNING} {var} {bcolors.ENDC}")

@@ -1,13 +1,70 @@
 body {
-    background-color: rgb(0, 0, 0);
+    background-color: rgb(10, 10, 10);
     color: rgb(226, 226, 226);
 }
+
+body > * {
+    flex-shrink: 0;
+}
+
 a {
     text-decoration: none; /* Remove underline */
     color: inherit; /* Inherit color from parent */
 }
 
-#back {
-    position: absolute;
-    
+
+
+.container {
+    height: 98vh;
+    outline: solid;
+    outline-color: rgb(211, 214, 28);
+    display: grid; 
+    grid-template-columns: 1.7fr 0.2fr 1.1fr; 
+    grid-template-rows: 0.3fr 2.2fr 0.5fr; 
+    gap: 10px 10px; 
+    grid-template-areas: 
+        "back . ."
+        "storage_flipper Band controls"
+        "L0 L0 stack_terminal"; 
+    }
+    .controls { grid-area: controls; }
+    .stack_terminal { grid-area: stack_terminal; }
+    .L0 { grid-area: L0; }
+    .Band { grid-area: Band; }
+    .storage_flipper { grid-area: storage_flipper; }
+    .back { grid-area: back; }
+
+.controls{
+    outline: solid;
+    outline-color: red;
+    height: 73vh;
 }
+
+.back {
+    height: 7vh;
+}
+
+.storage_flipper{
+    outline: solid;
+    outline-color: aqua;
+}
+
+.stock_terminal{
+    outline-color: rgb(59, 6, 207);
+}
+
+.L0 {
+    flex-grow: 1;
+    height: 16vh;
+    outline: solid;
+    outline-color: blueviolet;
+}
+
+.Band {
+    outline: solid;
+    outline-color: aliceblue;
+    outline-style: dashed;
+}
+
+
+

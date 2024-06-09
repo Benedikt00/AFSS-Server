@@ -4,11 +4,7 @@ from extensions import db
 from models import *
 import random
 
-from internal_logging import *
-
 from config import Config
-
-import json
 
 from stack import instruction_stack_afss
 
@@ -52,21 +48,6 @@ def get_empty_location(cont):
     
     return None
 
-@api.route("/afss_test", methods=["GET", "POST", "PUT", "PATCH"])
-def afss_tset():
-
-    request_data = {
-        "method": request.method,
-        "headers": dict(request.headers), 
-        "args": request.args.to_dict(),
-        "form": request.form.to_dict(),
-        "json": request.get_json(silent=True),
-        "data": request.data.decode('utf-8')
-    }
-
-    logcb(f"{json.dumps(request_data, indent=2)}")
-    logcb(f"{request.method}, afss_test")
-    return "200"        
 
 @api.route("/afss", methods=["GET", "POST"])
 def afss_stack():
@@ -90,21 +71,14 @@ def afss_stack():
             return "200" #TODO
         
         if "next_bmos" in req.keys():
-            return jsonify(afss_stack.get_current_bmos(int(req["next_bmos"])))
+            return jsonify(afss_stack.get_current_bmos(req["next_bmos"]))
         
         if "new_operations" in req.keys():
             for pair in req["new_operations"]:
                 afss_stack.norm_storing_operation(pair[0], pair[1])
-
-        if "get_state" in req.keys():
-            return afss_stack.get_system_state()
-        
-        if "set_state" in req.keys():
-            afss_stack.read_state = req["set_state"]
-            return "200"
     
     if request.method == "GET":
-        return jsonify("415")
+        return jsonify("")
 
 
 

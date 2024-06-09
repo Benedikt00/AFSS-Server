@@ -1,0 +1,57 @@
+{% macro render_sec_groupes_for_prim(secs) %}
+<div id="prim_tile" onclick="deselect()">
+    {{ secs[0].prim_title}}
+</div>
+<div id="secs_list">
+    {% for gp in secs %}
+    <div class="sec_title" onclick="select_secondary_groupes('{{gp.title}}', this)">
+        {{gp.title}}
+    </div>
+    {% endfor %}
+</div>
+{% endmacro %}
+
+{% macro render_primary_groupes(groupes)%}
+
+{% for prim_groupe in groupes %}
+<div class="prim_group" onclick="select_primary_groupe('{{prim_groupe.title}}')">
+    <p>{{ prim_groupe.title }}</p>
+</div>
+{% endfor %}
+{%endmacro%}
+
+
+{% macro further_cat(prefixes, unit)%}
+<input type="number" id="value_cat">
+<select name="prefixes" id="prefix_cat">
+    {% for prefixe in prefixes %}
+    <option value="{{prefixe}}">{{prefixe}}</option>
+    {% endfor %}
+</select>
+<p>{{unit}}</p>
+<button onclick="add_category('{{unit}}')">Attribut Hinzufügen</button>
+{% endmacro %}
+
+
+{% macro list_cats(cats)%}
+
+<table>
+    {% for elem in cats %}
+    <tr>
+        <td>{{elem['title']}}</td>
+        <td>{{elem['value']}}</td>
+        <td>{{elem['prefix']}}</td>
+        <td>{{elem['unit']}}</td>
+        <td><button onclick='delete_cat("{{elem}}")'>del</button></td>
+    </tr>
+    {% endfor %}
+
+</table>
+<div id="cats_hidden" visibility="hidden">
+{{cats}}
+</div>
+
+<script>
+    var categories = {{cats}}
+</script>
+{% endmacro %}

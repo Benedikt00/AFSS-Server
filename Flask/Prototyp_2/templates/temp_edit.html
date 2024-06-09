@@ -1,0 +1,19 @@
+{% macro edit_loc(name, id_x, id_y, x, y, category) %}
+    <p id="name">{{ name }}</p>
+    <p id = "id_x">{{ id_x }}</p>
+    <p id="id_y">{{ id_y }}</p>
+    <input type="number" id="x_cord" name="x_cord" value="{{ x }}">
+    <input type="number" id="y_cord" name="y_cord" value="{{ y }}">
+    <input type="text" id="category" value="{{ category }}" name = "category">
+    <button type ="submit" onclick="sendFormData()">Anderungen übernehemen</button>
+{% endmacro %}
+
+{% macro edit_spc(name, id_x, id_y, x, width) %}
+
+    <p id="name">{{ name }}</p>
+    <p id = "id_x">{{ id_x }}</p>
+    <p id="id_y">{{ id_y }}</p>
+    <input type="number" id="x_cord" name="x_cord" value="{{ x }}">
+    <input type="text" id="width" value="{{ width }}" name = "width">
+    <button type ="submit" onclick="sendFormData()">Anderungen übernehemen</button>
+{% endmacro %}

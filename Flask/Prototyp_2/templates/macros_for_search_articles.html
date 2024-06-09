@@ -1,0 +1,442 @@
+{% macro search_field() -%}
+<div>
+
+        <p>Activate Fancy Search:</p>
+        <label id="switch_fancy">
+                <input type="checkbox" id="fancy_switch_box">
+                <span class="slider round"></span>
+        </label>
+</div>
+
+<div id="fancy_search">
+        <input type="text" name="fancy_search" placeholder="Search..." id="fancy_search_input" onsubmit="search_fancy()">
+        <button type="button" id="search-button" onclick="search_fancy()">&#x1F50E;&#xFE0E;</button>
+</div>
+
+<div id="search_field">
+        <h3>Select Categories</h3>
+        <div id="group_selection"> <!-- gets filled by the macro -->
+        </div>
+        <div id="string_search">
+                <p>Suche:</p>
+                <input type="text" id="inp_search">
+        </div>
+        <div id="checkboxes">
+                <p>Extended Search</p>
+                <input type="checkbox" id="search_extended">
+                <p>Show all</p>
+                <input type="checkbox" id="show_all_results">
+        </div>
+        <div id="cat_selection">
+        </div>
+        <button onclick="search_button_press()">Suchen</button>
+</div>
+
+<style>
+        #fancy_search {
+                display: none;
+                flex-direction: row;
+                max-width: 500px;
+                margin: 20px auto;
+                
+                padding: 10px;
+                border: 1px solid #ccc;
+                border-radius: 5px;
+                overflow: hidden;
+                transition: max-height 1s ease;
+        }
+
+        /* Styling the fancy search input */
+        #fancy_search_input {
+                margin-right: 10px;
+                width: auto;
+                flex: 3;
+                padding: 10px;
+                border: none;
+                outline: none;
+                font-size: 16px;
+        }
+
+        /* Styling the search button */
+        #search-button {
+                padding: 10px 20px;
+                background-color: #4285F4;
+                color: white;
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+                transition: background-color 0.3s;
+        }
+
+        #search-button:hover {
+                background-color: #357AE8;
+        }
+
+
+        #search_field {
+                transition: height 0.5s ease;
+        }
+
+        .show-fancy-search {
+                /*max-height: 100px;*/
+                display: block;
+                /* Adjust this height as needed */
+        }
+
+        .hide-fancy-search {
+                /*max-height: 0;*/
+                display: none;
+        }
+
+        /* 
+        source. https://www.w3schools.com/howto/howto_css_switch.asp
+        The switch - the box around the slider */
+        #switch_fancy {
+                position: relative;
+                display: inline-block;
+                width: 60px;
+                height: 34px;
+        }
+
+        /* Hide default HTML checkbox */
+        #switch_fancy input {
+                opacity: 0;
+                width: 0;
+                height: 0;
+        }
+
+        /* The slider */
+        .slider {
+                position: absolute;
+                cursor: pointer;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background-color: #ccc;
+                -webkit-transition: .4s;
+                transition: .4s;
+        }
+
+        .slider:before {
+                position: absolute;
+                content: "";
+                height: 26px;
+                width: 26px;
+                left: 4px;
+                bottom: 4px;
+                background-color: white;
+                -webkit-transition: .4s;
+                transition: .4s;
+        }
+
+        input:checked+.slider {
+                background-color: #2196F3;
+        }
+
+        input:focus+.slider {
+                box-shadow: 0 0 1px #2196F3;
+        }
+
+        input:checked+.slider:before {
+                -webkit-transform: translateX(26px);
+                -ms-transform: translateX(26px);
+                transform: translateX(26px);
+        }
+
+        /* Rounded sliders */
+        .slider.round {
+                border-radius: 34px;
+        }
+
+        .slider.round:before {
+                border-radius: 50%;
+        }
+</style>
+
+{%- endmacro %}
+
+
+{% macro display_field(articles) -%}
+<table id="article_table">
+        <thead>
+                <th> Bild
+                </th>
+                <th> ID <button onclick="sortTable(1)">▼</button>
+                </th>
+                <th> Name <button onclick="sortTable(2)">▼</button>
+                </th>
+                <th> Beschreibung <button onclick="sortTable(3)">▼</button>
+                </th>
+                <th> Gruppe <button onclick="sortTable(4)">▼</button>
+                </th>
+                <th> categorie <button onclick="sortTable(5)">▼</button>
+                </th>
+                <th> Gewicht <button onclick="sortTable(6)">▼</button>
+                </th>
+                <th> Order </th>
+        </thead>
+        {% for article in articles %}
+        <tr>
+                <td id=""><img src="{{ url_for('main.get_image_product', image_name=article.picture ) }}"></th>
+
+                <td id="">{{ article.id }}</th>
+                <td id="">
+                        {{ article.article_name }}
+                        </th>
+                <td id="">
+                        {{article.article_description }}
+                        </th>
+                <td id="">
+                        {{ article.groupes }}
+                        </th>
+                <td id="">
+                        {{ article.category }}
+                        </th>
+                <td id="">
+                        {{ article.weight }}
+                        </th>
+                <td><button onclick="func_for_button_press({{ article.id }})">...</button></th>
+        </tr>
+        {% endfor %}
+</table>
+<script>
+
+</script>
+{%- endmacro %}
+
+{% macro render_for_secs(secs, prims) %}
+<div id="primary_groupes">
+
+        {% for prim_groupe in prims %}
+
+        {% if prim_groupe == secs.prim_title %}
+
+        <div class="prim_group" id="selected_prim" onclick="deselect_prim()">
+                <p>{{ prim_groupe.title }}</p>
+        </div>
+        {% else %}
+
+        <div class="prim_group" onclick="get_secs('{{prim_groupe.title}}')">
+                <p>{{ prim_groupe.title }}</p>
+        </div>
+
+        {% endif %}
+
+        {% endfor %}
+
+</div>
+
+<div id="secs_list">
+        {% for gp in secs %}
+        <div class="sec_title" onclick="select_secondary_group('{{gp.title}}', this)">
+                {{gp.title}}
+        </div>
+        {% endfor %}
+</div>
+{% endmacro %}
+
+
+{% macro render_primary_groupes(groupes)%}
+<div id="primary_groupes">
+        {% for prim_groupe in groupes %}
+        <div class="prim_group" onclick="get_secs('{{prim_groupe.title}}')">
+                <p>{{ prim_groupe.title }}</p>
+        </div>
+        {% endfor %}
+</div>
+{%endmacro%}
+
+
+{% macro further_cat(prefixes, unit)%}
+<input type="number" id="value_cat">
+<select name="prefixes" id="prefix_cat">
+        {% for prefixe in prefixes %}
+        <option value="{{prefixe}}">{{prefixe}}</option>
+        {% endfor %}
+</select>
+<p>{{unit}}</p>
+<button onclick="add_category('{{unit}}')">Attribut Hinzufügen</button>
+{% endmacro %}
+
+{% macro search_js() %}
+
+<script>
+
+        
+
+        function search_fancy(){
+                query = document.getElementById("fancy_search_input").value
+                console.log(query)
+                sendData_db({"fancy_query": query}, set_listed_articles)
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+                const fancySwitchCheckbox = document.getElementById("fancy_switch_box");
+                const fancySearchDiv = document.getElementById("fancy_search");
+                const searchFieldDiv = document.getElementById("search_field");
+
+                fancySwitchCheckbox.addEventListener("change", function () {
+                        if (fancySwitchCheckbox.checked) {
+                                searchFieldDiv.style.height = searchFieldDiv.scrollHeight + fancySearchDiv.scrollHeight + "px";
+                                fancySearchDiv.style.display = 'flex';
+                                searchFieldDiv.classList.add("hide-fancy-search");
+                        } else {
+                                searchFieldDiv.style.height = searchFieldDiv.scrollHeight - fancySearchDiv.scrollHeight + "px";
+                                searchFieldDiv.classList.remove("hide-fancy-search");
+                                fancySearchDiv.style.display = 'none';
+
+                        }
+                });
+        });
+
+
+        function search_button_press() {
+
+                string_search = document.getElementById("inp_search").value
+                extended_search = document.getElementById("search_extended").checked
+                show_all = document.getElementById("show_all_results").checked
+
+                attributes = null
+
+                search = { "search_with_groupes": [prim_gp, sec_gp], "string_search": string_search, "attributes": attributes, "extend_search": extended_search, "show_all": show_all }
+
+                console.log(search)
+                sendData_db({ "search": search }, set_listed_articles)
+
+        }
+
+        window.onload = function () {
+                set_listed_articles_get();
+                get_prims()
+        };
+
+        function set_listed_articles_get() {
+                fetch("{{url_for('main.search_articles_db_interaction')}}")
+                        .then((response) => response.text())
+                        .then((response) => set_listed_articles(response))
+
+        }
+
+        function set_listed_articles(data) {
+                document.getElementById("articles_listed").innerHTML = data
+        }
+
+        var prim_gp = null
+        var sec_gp = null
+
+        function sortTable(n) {
+                var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+                table = document.getElementById("article_table");
+                switching = true;
+                // Set the sorting direction to ascending:
+                dir = "asc";
+                /* Make a loop that will continue until
+                no switching has been done: */
+                while (switching) {
+                        // Start by saying: no switching is done:
+                        switching = false;
+                        rows = table.rows;
+                        /* Loop through all table rows (except the
+                        first, which contains table headers): */
+                        for (i = 1; i < (rows.length - 1); i++) {
+                                // Start by saying there should be no switching:
+                                shouldSwitch = false;
+                                /* Get the two elements you want to compare,
+                                one from current row and one from the next: */
+                                x = rows[i].getElementsByTagName("TD")[n];
+                                y = rows[i + 1].getElementsByTagName("TD")[n];
+                                /* Check if the two rows should switch place,
+                                based on the direction, asc or desc: */
+                                if (dir == "asc") {
+                                        if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
+                                                // If so, mark as a switch and break the loop:
+                                                shouldSwitch = true;
+                                                break;
+                                        }
+                                } else if (dir == "desc") {
+                                        if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
+                                                // If so, mark as a switch and break the loop:
+                                                shouldSwitch = true;
+                                                break;
+                                        }
+                                }
+                        }
+                        if (shouldSwitch) {
+                                /* If a switch has been marked, make the switch
+                                and mark that a switch has been done: */
+                                rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                                switching = true;
+                                // Each time a switch is done, increase this count by 1:
+                                switchcount++;
+                        } else {
+                                /* If no switching has been done AND the direction is "asc",
+                                set the direction to "desc" and run the while loop again. */
+                                if (switchcount == 0 && dir == "asc") {
+                                        dir = "desc";
+                                        switching = true;
+                                }
+                        }
+                }
+        }
+
+        function get_secs(title) {
+                sendData_db({ "get_secs_for_prim": title }, set_group_selection)
+                prim_gp = title
+                sendData_db({ "search": { "search_with_groupes": prim_gp } }, set_listed_articles)
+        }
+
+        let selectedDiv = null;
+
+        function select_secondary_group(title, div) {
+                if (selectedDiv !== null) {
+                        selectedDiv.style.backgroundColor = ''; // Reset the background color of the previously selected div
+                }
+                if (selectedDiv !== div) {
+                        div.style.backgroundColor = 'lightblue'; // Change the background color of the clicked div
+                        selectedDiv = div;
+                        sec_gp = title
+                        sendData_db({ "search": { "search_with_groupes": [prim_gp, sec_gp] } }, set_listed_articles)
+                } else {
+                        selectedDiv = null; // If the same div is clicked twice, deselect it
+                        sec_gp = null
+                }
+        }
+
+        function get_prims() {
+                sendData_db({ "get_primary_groupes": "" }, set_group_selection)
+        }
+
+        function set_group_selection(data) {
+                document.getElementById("group_selection").innerHTML = data
+        }
+
+        function sendData_db(data, callback) {
+                var xhr = new XMLHttpRequest();
+                var url = "{{url_for('main.search_articles_db_interaction')}}";
+
+                xhr.open("POST", url, true);
+                xhr.setRequestHeader("Content-Type", "application/json");
+
+                xhr.onreadystatechange = function () {
+                        if (xhr.readyState === 4 && xhr.status === 200) {
+                                // Request was successful, handle response here if needed
+                                //console.log(xhr.responseText);
+                                callback(xhr.responseText)  // 2/2 statdessen braucht man eine callback funkltion und muss das so klobig machen
+
+
+                        }
+                };
+
+                var jsonData = JSON.stringify(data);
+                xhr.send(jsonData);
+        }
+
+        function deselect_prim() {
+                get_prims()
+                prim_gp = null
+                sec_gp = null
+        }
+</script>
+
+{% endmacro %}

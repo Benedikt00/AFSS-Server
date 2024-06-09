@@ -1,0 +1,43 @@
+<storage title="afss_1">
+    <gen_data num_rows="4" num_cols="6" row_spacing="80" col_spacing="160" x_spacers="[{\'x\': \'2\', \'width\': \'45\'}, {\'x\': \'4\', \'width\': \'45\'}]" />
+    <row id="0" y="30">
+        <location id="0" x="30" y="30" category="PS" />
+        <location id="1" x="190" y="30" category="PS" />
+        <spacer id="2" x="395" width="45" />
+        <location id="3" x="555" y="30" category="PS" />
+        <spacer id="4" x="760" width="45" />
+        <location id="5" x="920" y="30" category="PS" />
+        <location id="6" x="1080" y="30" category="PS" />
+        <location id="7" x="1240" y="30" category="PS" />
+    </row>
+    <row id="1" y="110">
+        <location id="0" x="30" y="110" category="PS" />
+        <location id="1" x="190" y="110" category="PS" />
+        <spacer id="2" x="395" width="45" />
+        <location id="3" x="555" y="110" category="PS" />
+        <spacer id="4" x="760" width="45" />
+        <location id="5" x="920" y="110" category="PS" />
+        <location id="6" x="1080" y="110" category="PS" />
+        <location id="7" x="1240" y="110" category="PS" />
+    </row>
+    <row id="2" y="190">
+        <location id="0" x="30" y="190" category="PS" />
+        <location id="1" x="190" y="190" category="PS" />
+        <spacer id="2" x="395" width="45" />
+        <location id="3" x="555" y="190" category="PS" />
+        <spacer id="4" x="760" width="45" />
+        <location id="5" x="920" y="190" category="PS" />
+        <location id="6" x="1080" y="190" category="PS" />
+        <location id="7" x="1240" y="190" category="PS" />
+    </row>
+    <row id="3" y="270">
+        <location id="0" x="30" y="270" category="PS" />
+        <location id="1" x="190" y="270" category="PS" />
+        <spacer id="2" x="395" width="45" />
+        <location id="3" x="555" y="270" category="PS" />
+        <spacer id="4" x="760" width="45" />
+        <location id="5" x="920" y="270" category="PS" />
+        <location id="6" x="1080" y="270" category="PS" />
+        <location id="7" x="1240" y="270" category="PS" />
+    </row>
+</storage>

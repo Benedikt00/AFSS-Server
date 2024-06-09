@@ -20,7 +20,7 @@ def stack_test():
 
     end = Location.query.get_or_404(0)
     print(stack.show_stack())
-    stack.create_order(stack.generate_path(start, end))
+    stack.generate_path(start, end)
     print(type(Location.query.get_or_404(30)))
 
     print(stack.show_stack())
@@ -28,17 +28,9 @@ def stack_test():
 
     return jsonify(stack.stack)
 
-@testing.route("/stack/id", methods=["POST"])
-def stack_test_id():
-    if request.method == "POST":
-        id = request.get_json()["id"]
-        logcb(id)
-    return jsonify(stack.get_current_bmos(int(id)))
-
-@testing.route("/stack/_<id>", methods=['GET'])
-def stack_test_ids(id):
-
-    return jsonify(stack.get_current_bmos(int(id)))
+@testing.route("/stack/_<id>")
+def stack_test_id(id):
+    return jsonify(stack.get_current_bmos(id))
 
 @testing.route("/stack/show")
 def show_stack():

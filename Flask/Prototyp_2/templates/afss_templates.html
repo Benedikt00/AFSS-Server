@@ -1,0 +1,264 @@
+{% extends "base_template.html" %}
+
+{% block title %}Hochregallager Visualizer{% endblock %}
+
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='afss_templates.css') }}">{% endblock %}
+
+
+{% block content %}
+
+<div class="generation_form">
+    <h1>Hochregallager Visualizer</h1>
+    <form action="{{url_for('afss_templates.storage_templates')}}" method="POST" name="main">
+        <label for="title">Titel</label>
+        <input type="text" id="title" name="title" value="Default" required>
+        <label for="rows">Anzahl der Reihen:</label>
+        <input type="number" id="rows" name="num_rows" value="{{ num_rows }}" required>
+        <label for="cols">Anzahl der Spalten:</label>
+        <input type="number" id="cols" name="num_cols" value="{{ num_cols }}" required>
+        <label for="row_spacing">Reihenabstand:</label>
+        <input type="number" id="row_spacing" name="row_spacing" value="{{ row_spacing }}" required>
+        <label for="col_spacing">Spaltenabstand:</label>
+
+        <input type="number" id="col_spacing" name="col_spacing" value="{{ col_spacing }}" required>
+
+        <label for="spacers">Abstandshalterstärke:</label>
+        <textarea type="number" id="spacers" name="spacers" required>{{ x_spacers }}</textarea>
+
+        <label for="x_zero">X-Nullpunkt</label>
+        <input type="number" id="x_zero" name="x_zero" value="{{ x_zero }}" required>
+
+        <label for="y_zero">Y-Nullpunkt</label>
+        <input type="number" id="y_zero" name="y_zero" value="{{ y_zero }}" required>
+
+        <button type="submit">Erzeugen</button>
+    </form>
+</div>
+
+<div id="container"></div>
+<p id="xml_in" style="display: none;">{{xml}}</p>
+<p id="xml_dc"></p>
+<div id="edit_auf_loc" {# style="display: none" #}>
+
+</div>
+<div id="controls">
+    <p>Scale Everything</p>
+    <input id="scalar" type="range" min="0.1" max="1.5" step="0.05" value="0.5">
+    <p>X-Mult</p>
+    <input id="x_mult" type="range" min="0.1" max="1.5" step="0.05" value="1" />
+    <p>Y-Mult</p>
+    <input id="y_mult" type="range" min="0.1" max="1.5" step="0.05" value="1" />
+    <p>W-Mult</p>
+    <input id="w_mult" type="range" min="0.1" max="1.5" step="0.05" value="1" />
+    <p>H-Mult</p>
+    <input id="h_mult" type="range" min="0.1" max="1.5" step="0.05" value="1" />
+    <button onclick="load_visu()">Reload</button>
+</div>
+{% endblock %}
+
+
+
+{% block js %}
+<script>
+    {% if xml %}
+
+    var dt = document.getElementById("xml_in").innerHTML;
+    console.log(dt)
+    dt = dt.replace(/'/g, '"').replace(/\\"/g, '"'); //wtf
+
+    // Parse the cleaned string into JSON
+    const parsedJSON = JSON.parse(dt);
+
+    console.log(parsedJSON)
+
+
+    const container = document.getElementById('container');
+
+    // Function to create a box element
+    function createBox(x, y, id_x, id_y) {
+        const box = document.createElement('div');
+        box.className = 'box';
+
+        x_mult = document.getElementById("x_mult").value
+        y_mult = document.getElementById("y_mult").value
+        scalar = document.getElementById("scalar").value
+        box.style.left = x * x_mult * scalar + 'px';
+        box.style.bottom = y * y_mult * scalar + 'px';
+        container.appendChild(box);
+        // Add event listener to the box
+        box.addEventListener('click', function () {
+            // Send POST request
+            fetch('{{url_for('afss_templates.storage_templates')}}', {
+                method: 'POST',
+                body: JSON.stringify({ "xy": { id_x, id_y } }),
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            }).then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.text();
+            })
+                .then(response => {
+                    console.log(response);
+                    // Update the content of the element
+                    document.getElementById('edit_auf_loc').innerHTML = response;
+                    document.getElementById('edit_auf_loc').style.visibility = "visible";
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        });
+    }
+
+    function createSpacer(x, y, width, id_x, id_y) {
+        const box = document.createElement('div');
+
+        x_mult = document.getElementById("x_mult").value
+        y_mult = document.getElementById("y_mult").value
+        scalar = document.getElementById("scalar").value
+
+        box.className = 'spacer';
+        box.style.left = x * x_mult * scalar + 'px';
+        box.style.bottom = y * y_mult * scalar + 'px';
+        container.appendChild(box);
+        // Add event listener to the box
+        box.addEventListener('click', function () {
+            // Send POST request
+            fetch('{{ url_for('afss_templates.storage_templates') }}', {
+                method: 'POST',
+                body: JSON.stringify({ "xy": { id_x, id_y } }),
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.text();
+                })
+                .then(response => {
+                    console.log(response);
+                    // Update the content of the element
+                    document.getElementById('edit_auf_loc').innerHTML = response;
+                    document.getElementById('edit_auf_loc').style.visibility = "visible";
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        });
+    }
+
+    function load_visu() {
+        // Iterate through the locations and create boxe
+        container.innerHTML = ''
+        parsedJSON.storage.row.forEach(row => {
+            row.location.forEach(location => {
+                const x = parseInt(location['@x']) + parseInt(row.spacer[0]['@width']);
+                const y = parseInt(row['@y']);
+                id_x = parseInt(location['@id'])
+                id_y = parseInt(row['@id']);
+                createBox(x, y, id_x, id_y);
+            });
+            row.spacer.forEach(spacer => {
+                const x = parseInt(spacer['@x']) + parseInt(row.spacer[0]['@width']);
+                const y = parseInt(row['@y']);
+                id_x = parseInt(spacer['@id'])
+                id_y = parseInt(row['@id']);
+                width = parseInt(spacer['@width']);
+
+                createSpacer(x, y, width, id_x, id_y);
+            })
+        });
+        scalar = document.getElementById("scalar").value
+        w_mult = document.getElementById("w_mult").value
+        h_mult = document.getElementById("h_mult").value
+
+        boxes = document.getElementsByClassName('box')
+        spacers = document.getElementsByClassName('spacer')
+
+
+        maxHeight = 0;
+
+        for (var i = 0; i < boxes.length; i++) {
+            // Set the width here, for example:
+            boxes[i].style.width = 50 * w_mult * scalar + 'px';
+            boxes[i].style.height = 50 * h_mult * scalar + 'px';
+
+
+            var innerDivHeight = parseInt(boxes[i].style.bottom);
+            console.log(boxes[i].style.bottom)
+            maxHeight = Math.max(maxHeight, innerDivHeight);
+
+        }
+
+        for (var i = 0; i < spacers.length; i++) {
+            // Set the width here, for example:
+            spacers[i].style.width = 20 * w_mult * scalar + 'px';
+            spacers[i].style.height = 50 * h_mult * scalar + 'px';
+        }
+
+        // Set the height of the outer div
+        document.getElementById('container').style.height = maxHeight + 'px';
+
+    }
+    load_visu()
+    {% else %}
+    {% endif %}
+
+    function sendFormData() {
+        // Get form data
+        var name = document.getElementById("name").innerHTML;
+        var id_x = document.getElementById("id_x").innerHTML;
+        var id_y = document.getElementById("id_y").innerHTML;
+        var x = document.getElementById("x_cord").value;
+
+        if (document.getElementById("category")) {
+            var ch = document.getElementById("category").value;
+            var y = document.getElementById("y_cord").value;
+        }
+        else {
+            var ch = document.getElementById("width").value;
+
+        }
+
+        // Create data object
+        var data = {
+            name: name,
+            id_x: id_x,
+            id_y: id_y,
+            x: x,
+            y: y,
+            ch: ch
+        };
+        console.log(data)
+        // Send data
+        sendData(data);
+    }
+
+    function sendData(data) {
+        var xhr = new XMLHttpRequest();
+        var url = "{{url_for('afss_templates.storage_templates')}}";
+
+        xhr.open("POST", url, true);
+        xhr.setRequestHeader("Content-Type", "application/json");
+
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState === 4 && xhr.status === 200) {
+                // Request was successful, handle response here if needed
+                console.log(xhr.responseText);
+            }
+        };
+
+        var jsonData = JSON.stringify(data);
+        xhr.send(jsonData);
+    }
+
+
+</script>
+
+{% endblock %}
