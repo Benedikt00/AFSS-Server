@@ -1,0 +1,42 @@
+<nav id="nav_top">
+    <ul>
+        <li>
+            <p id="logo">AFSS</p>
+        </li>
+        <li><a href="/">Home</a></li>
+        <li><a href="{{ url_for('main.new_article') }}">New Articles</a></li>
+        <li><a href="{{ url_for('main.search_articles') }}">Search Articles</a></li>
+        
+        <li class="dropdown">
+            <a href="#" class="dropbtn">Add stuff</a>
+            <div class="dropdown-content">
+                <a href="{{ url_for('main.add_stock') }}">Stock</a>
+                <a href="{{ url_for('main.add_area') }}">Area</a>
+                <a href="{{ url_for('main.add_container') }}">Container</a>
+            
+                <!-- <a href="#">Link 3</a> -->
+            </div>
+        </li>
+        <li><a href="{{ url_for('manage_db.index') }}">DB-management</a></li>
+        <li><a href="{{ url_for('afss_templates.storage_templates') }}">AFSS Templates</a></li>
+        <li><a href="{{ url_for('dashb.index') }}">Dashboard</a></li>
+
+        <li id="wiki" title="Wiki"><a href="{{ url_for('wiki.wiki_index') }}">&#9432;</a></li>
+
+        {#{% if not session['access'] %}
+        <li id="login"><a href="{{ url_for('main.login') }}">Login</a></li>
+        {% else %}
+        <li id="login"><a href="{{ url_for('main.logout') }}">Logout</a></li>
+        {% endif %} #}
+
+
+        <!-- Add more items as needed -->
+        {# <li><a href="{{ url_for('') }}"></a></li> #}
+
+     <!-- css dazu in wiki/style.css -->
+
+    </ul>
+</nav>
+<script>
+
+</script>

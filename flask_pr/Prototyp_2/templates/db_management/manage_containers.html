@@ -1,0 +1,29 @@
+{% extends "base_template.html" %}
+{% import "db_management/macros_for_manage_containers.html" as macros %}
+
+{% block head %}
+{% endblock %}
+
+{% block title %}
+Manage Containers
+{% endblock %}
+
+{% block content %}
+
+<div id="mc_containers">
+{{ macros.render_containers(containers)}}
+</div>
+
+
+{% endblock %}
+
+
+{% block js %}
+
+{{ macros.js()}}
+
+<script>
+
+</script>
+{% endblock %}
+

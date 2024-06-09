@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Selection</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='selection.css') }}">
+
+</head>
+
+<body>
+    {% include "nav_template.html "%}
+    <div id="dropdown_menu_container">
+        <form action="/selection/api" method="post" id="form_dp" name="form_dp_name" type="text">
+            {% import "dropdown_macro.html" as dp_macro %}
+            {% for i in db_keys_1 %}
+            {{ dp_macro.render_dropdown_menue(loop.index0, db_keys_1, selected_values, index_choose)}}
+            {% endfor %}
+            <!-- TODO: Clear Selection -->
+        </form>
+
+
+    </div>
+    <div class="div_db_responses">
+        <table id="db_responses">
+            {% for entry in db_entrys_from_keys %}
+            <tr>
+
+                <td>
+                    <p>{{entry['id']}}</p>
+                </td>
+                <td>
+                    <p>{{entry['Bauteilname']}}</p>
+                </td>
+                <td>
+                    <p>{{entry['Platz']}}</p>
+                </td>
+                <td>
+                    <p>{{entry['Kategorisierungen']}}</p>
+                </td>
+                <td>
+                    <p>{{entry['Anzahl']}}</p>
+                </td>
+                <td><input type="button" value="Bestellen" onclick="handle_order({{entry}})"></td>
+                <td><button onclick="window.location.href=`/manage_db/{{entry['id']}}`"
+                        title="Edit entry">&#x2807;</button></td>
+
+
+            </tr>
+
+
+            {% endfor %}
+        </table>
+    </div>
+
+
+
+</body>
+<script>
+
+
+    function handle_order(entry) {
+        console.log(JSON.stringify(entry));
+
+        entry['quantity'] = 1
+
+        var xhr = new XMLHttpRequest();
+        xhr.open('post', '{{ url_for("main.selection")  }}', true);
+        // Set up the callback function for when the request completes
+
+        var formData = new FormData();
+        // Add the selected data to the FormData object
+        formData.append('add_to_cart', JSON.stringify(entry));
+
+        xhr.onload = function () {
+            if (xhr.status === 200) {
+                // Handle the successful response here
+                console.log('Form submitted successfully');
+            } else {
+                // Handle errors or other statuses
+                console.error('Form submission failed');
+            }
+        };
+
+        // Send the FormData object with the request
+        xhr.send(formData);
+    }
+
+    console.log("after reload")
+
+    function submitForm(form_id, index) {
+        console.log(index)
+        sub_val = document.querySelectorAll('.dp_input')
+        i = 0
+        vales_of_inputs = []
+
+
+        //geht sicher cleaner
+        //loscht alle weiteren einträge, wenn ein eintrag weiterr vorne geändert wurde
+        sub_val.forEach(element => {
+            if (i > index) {
+                vales_of_inputs.push("")
+            } else {
+                vales_of_inputs.push(element.value)
+                i += 1
+            }
+
+        });
+
+        console.log(vales_of_inputs + " values");
+
+        // Get the form and input/select elements
+        var form = document.getElementById(form_id);
+        // Create a FormData object
+        var formData = new FormData();
+        // Add the selected data to the FormData object
+        formData.append('form_values', vales_of_inputs);
+
+        // Perform an AJAX request to submit the form data
+        var xhr = new XMLHttpRequest();
+        xhr.open('post', '/selection', true);
+
+        // Set up the callback function for when the request completes
+        xhr.onload = function () {
+            if (xhr.status === 200) {
+                // Handle the successful response here
+                console.log('Form submitted successfully');
+
+                //change howl page html lol
+                document.open();
+                document.write(xhr.response);
+                document.close();
+                //console.log(xhr.responseText);
+            } else {
+                // Handle errors or other statuses
+                console.error('Form submission failed');
+            }
+        };
+
+        // Send the FormData object with the request
+        xhr.send(formData);
+    }
+
+
+    //socket.addEventListener('message', ev => {
+    //    console.log(ev.data);
+    //});
+    //    socket.send(textField.value);
+    //};
+
+
+</script>
+
+</html>

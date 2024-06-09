@@ -1,0 +1,19 @@
+
+<table class="list">
+<tr>
+    {% for key in data_to_display[0]%}
+        <th><p>{{key}}</p>
+        <button onclick="sort_for_key('{{key}}')">&#9660;</button>
+        </th>
+    {% endfor %}
+</tr>
+
+{% for entry in data_to_display%}
+        <tr onclick="window.location='/manage_db/{{entry['id']}}';" class="db_entry_loaded">
+        {% for key in entry %}
+            <td>{{entry[key]}}</td>
+        {% endfor %}
+        </tr>
+{% endfor %}
+
+</table>
