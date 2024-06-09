@@ -8,7 +8,7 @@ from afss_templates import afss_templates
 from search_logic import search
 from api import api
 from tsets import testing
-from visu import visu
+from dashboard import dashb
 
 import os
 
@@ -27,7 +27,7 @@ def create_app():
     app.register_blueprint(manage_db, url_prefix='/manage_db')    
     app.register_blueprint(api, url_prefix='/api')    
     app.register_blueprint(testing, url_prefix='/test')    
-    app.register_blueprint(visu, url_prefix='/visu')    
+    app.register_blueprint(dashb, url_prefix='/dashboard')    
     
     app.app_context()
     #login_manager.init_app(app)

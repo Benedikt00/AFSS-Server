@@ -1,0 +1,148 @@
+{% macro render_stocks(stocks) -%}
+<div id="stock_table">
+
+    <table>
+        <thead>
+            <td></td>
+            <th>container</th>
+            <th>article</th>
+            <th>quantity</th>
+    
+        </thead>
+        <tbody id="locations_table_body">
+        {% for stock in stocks %}
+        <tr>
+            <td>{{stock.id}}</td>
+            <td ondblclick="to_input(this, 1, '{{ stock.id }}', 'container', true)">{{stock.container}}</td>
+            <td ondblclick="to_input(this, 1, '{{ stock.id }}', 'article', true)">{{stock.article}}</td>
+            <td ondblclick="to_input(this, 1, '{{ stock.id }}', 'quantity', true)">{{stock.quantity}}</td>
+    
+            
+        </tr>
+        {% endfor %}
+        </tbody>
+        
+    </table>
+    <button onClick="submit_changes()">Submit Changes</button>
+    <div id="message">
+            {% with messages = get_flashed_messages() %}
+            {% if messages %}
+            <ul>
+                {% for message in messages %}
+                <li>{{ message }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+            {% endwith %}
+        </div>
+    </div>
+{%- endmacro %}
+
+{% macro js() -%}
+
+<script>
+
+    var activeInput = null; // Variable to keep track of active input
+
+    var activeInput = null
+    var activeId = null
+    var activeCategory = null
+
+    var changes = []
+
+
+    function submit_changes() {
+        sendData({ "changes": changes }, set_areas)
+    }
+
+    function set_areas(response) {
+        document.getElementById('mc_stock').innerHTML = response
+    }
+
+    function sendData(data, callback) {
+        var xhr = new XMLHttpRequest();
+        var url = "{{url_for('manage_db.edit_stocks_db')}}";
+
+        xhr.open("POST", url, true);
+        xhr.setRequestHeader("Content-Type", "application/json");
+
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState === 4 && xhr.status === 200) {
+                // Request was successful, handle response here if needed
+                //console.log(xhr.responseText);
+                callback(xhr.responseText)  // 2/2 statdessen braucht man eine callback funkltion und muss das so klobig machen
+
+
+            }
+        };
+
+        var jsonData = JSON.stringify(data);
+        xhr.send(jsonData);
+    }
+
+    function to_input(el, max_len, id, categorie, number) {
+        // Check if there's an active input, close it if exists
+        if (activeInput !== null) {
+            close_input(activeInput);
+        }
+        console.log(el)
+
+        var val = el.innerHTML.trim(); // Trim whitespace
+        if (number){
+        var inputHTML = "<input class=\"search_input\" type=\"number\" value=\"" + val + "\"/>";
+
+        }
+        else{
+        var inputHTML = "<input class=\"search_input\" type=\"text\" value=\"" + val + "\" maxlen=\"" + max_len + "\"/>";
+
+        }
+        el.innerHTML = inputHTML;
+        console.log(val)
+        // Set the active input to this one
+        activeInput = el;
+        activeId = id
+        console.log(activeId)
+        activeCategory = categorie
+        // Focus on the input field
+        el.querySelector('input').focus();
+    }
+
+    // Function to close the input and restore the original content
+    function close_input(el) {
+        var inputValue = el.querySelector('input').value; // Get the input value
+        el.innerHTML = inputValue; // Restore original content
+
+        //console.log(activeCategory)
+        new_ch = { [activeId]: { [activeCategory]: inputValue } } // [] um die variable ALS KEY VERWENDEN ZU KÖNNEN
+
+        changes.push(new_ch)
+        activeInput = null; // Reset active input
+        activeId = null
+        activeCategory = null
+    }
+
+    // Function to handle double click on table cell
+    function onDoubleClickHandler(el) {
+        if (el.tagName.toLowerCase() === 'td') {
+            to_input(el);
+        }
+    }
+
+    // Function to handle clicking outside input
+    document.addEventListener('click', function (event) {
+        if (activeInput !== null && !activeInput.contains(event.target)) {
+            close_input(activeInput);
+        }
+    });
+
+    // Function to handle pressing Enter key
+    document.addEventListener('keydown', function (event) {
+        if (event.key === 'Enter' && activeInput !== null) {
+            close_input(activeInput);
+        }
+    });
+
+</script>
+
+
+{%- endmacro %}

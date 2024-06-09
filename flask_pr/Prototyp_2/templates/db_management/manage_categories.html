@@ -1,0 +1,18 @@
+{% extends "base_template.html" %}
+
+{% block title %}Categorys{% endblock %}
+
+
+
+{% block content %}
+
+{% import "db_management/macros_for_manage_categories.html" as macros %}
+
+{{ macros.render_categories_table(cats) }}
+
+{% endblock %}
+
+{% block js %}
+
+
+{% endblock js %}

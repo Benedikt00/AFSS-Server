@@ -26,6 +26,8 @@ class instruction_stack_afss():
         self.shifters = Config.AFSS_SHIFTER_POSITIONS
         self.shifter_clearance = - 250
 
+        self.real_state = {}
+        
 
     def create_stack(self):
         self.stack = {self.fb: []}
@@ -305,16 +307,17 @@ class instruction_stack_afss():
         return None  # If the instruction_id is not found
 
 
-    def is_lowest_instruction(given_instruction, data_dict):
+    def is_lowest_instruction(self, given_instruction, data_dict):
         lowest_instruction = None
-
-        for key, instructions in data_dict.items():
-            for instruction in instructions:
+        try:
+            for instruction in data_dict:
                 if lowest_instruction is None or \
                 instruction['order_id'] < lowest_instruction['order_id'] or \
                 (instruction['order_id'] == lowest_instruction['order_id'] and instruction['instruction_id'] < lowest_instruction['instruction_id']):
                     lowest_instruction = instruction
-
+        except Exception as e:
+            logcb(f"Error: \n gi: {given_instruction},\n dd: {data_dict}")
+            logcr(e)
         return given_instruction == lowest_instruction
 
 

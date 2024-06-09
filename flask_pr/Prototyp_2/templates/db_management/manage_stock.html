@@ -1,0 +1,25 @@
+{% extends "base_template.html" %}
+
+{% import "db_management/macros_for_manage_stock.html" as macros %}
+
+{% block title %}
+Manage Stock
+{% endblock title %}
+{% block head %}
+
+{% endblock head %}
+
+{% block content %}
+<div id="mc_stock">
+    {{ macros.render_stocks(stocks)}}
+
+</div>
+
+
+{% endblock content %}
+
+{% block js %}
+
+{{ macros.js() }}
+
+{% endblock js %}
