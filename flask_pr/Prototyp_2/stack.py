@@ -412,7 +412,6 @@ class instruction_stack_afss():
                                 instructions_to_send.append(instruction)
                             
                             if relation == 0:
-
                                 if self.is_lowest_instruction(instruction, instructions) and instruction["instruction_id"] not in self.pending_instruction_ids:
                                     instructions_to_send.append(instruction)
         
@@ -424,8 +423,6 @@ class instruction_stack_afss():
 
         return instructions_to_send
 
-    def get_system_state(self):
-        return 0
 
 
 if __name__ == '__main__':

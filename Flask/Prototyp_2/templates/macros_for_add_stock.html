@@ -1,8 +1,0 @@
-{% macro generated_stock(article, quantity, img, container) -%}
-
-<p>{{article}}: {{quantity}}</p>
-<p>In Container {{container}}</p>
-
-<img src="{{ url_for('main.get_image_product', image_name=img ) }}">
-<button onclick="add_to_db()">Add to Database</button>
-{% endmacro %}
