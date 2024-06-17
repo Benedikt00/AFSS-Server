@@ -44,6 +44,7 @@ from config import Config
 
 from search_logic import search_query
 
+import requests
 # db = SQLAlchemy(app)
 from internal_logging import *
 
@@ -63,6 +64,7 @@ ERROR: Due to a more serious problem, the software has not been able to perform 
 CRITICAL
 """
 
+api_url = f"http://{Config.DOMAIN}/api/"
 
 @main.route("/")
 def root():
@@ -76,9 +78,13 @@ def page_not_found(e):
 
 @main.route("/test")
 def test():
+    
+    api_url = f"http://{Config.DOMAIN}/api/afss_test"  # Update with your API route
+    
+    response = requests.post(api_url, json={"test": "sdfg"})
+    data = response
+    logcb(data)
     return render_template("test.html")
-
-        
 
 def allowed_file(filename):
     return (
@@ -356,7 +362,6 @@ def search_articles_db_interaction():
 
                 return get_template_attribute("macros_for_search_articles.html", "display_field")(results)
 
-
         return 400
 
     f_ten = Article.query.limit(Config.QUERY_LIMIT_SOFT).all()
@@ -388,14 +393,19 @@ def order_api():
         if "order" in req.keys():
             logcb(req)
             o_stock = int(req['order']['stock'])
-            o_quant = int(req['order']['quantity'])
-
+            
+            try:
+                o_quant = int(req['order']['quantity'])
+            except ValueError:
+                return "Quantity must be an Integer"
+            
             stock = Stock.query.get_or_404(o_stock)
+            reserved_stock = stock.reserved_quantity
 
             if not o_stock:
                 return "choose stock"
 
-            if stock.quantity < o_quant:
+            if (stock.quantity - reserved_stock) < o_quant:
                 return "Quantity to high"
             
             o_container = stock.container
@@ -403,10 +413,18 @@ def order_api():
             cont = Container.query.get_or_404(o_container)
 
             if cont.area not in Config.AFSS_AREAS.keys():
-                return "Not a afss thing" #TODO
+                return "Not an afss thing" #TODO
 
             cont.target_location = 0
+
+            stock.reserved_quantity = stock.reserved_quantity + int(req["add_to_cart"]["quantity"])
+
             db.session.commit()
+
+            response = requests.post(api_url + "afss", json={"new_operations": [cont.current_location, cont.target_location]})
+
+            if response != "200":
+                logcr(f"error adding orders to stack")
 
             return "Added to stack (coming soon)"
         
@@ -421,24 +439,25 @@ def order_api():
             if not stock:
                 return "choose stock"
 
-            if stock.quantity < o_quant:
+            if (stock.quantity - stock.reserved_quantity) < o_quant:
                 return "Quantity to high"
             
             logcb(o_stock)
             
             new_inst = Cart(
+                id_sort = get_highest_or_default_cart() + 1,
                 stock = stock.id,
                 container =  stock.container,
                 quantity = req["add_to_cart"]["quantity"]
             )
 
             db.session.add(new_inst)
+
+            stock.reserved_quantity = stock.reserved_quantity + int(req["add_to_cart"]["quantity"])
+
             db.session.commit()
 
             return "Added to cart"
-
-
-
 
 
 @main.route("/add_stock", methods=['GET', "POST"])
@@ -474,7 +493,6 @@ def add_stock():
                 db.session.add(new)
                 db.session.commit()
                 return "Sucsess"
-
 
 
     return render_template("add_stock.html")
@@ -613,22 +631,133 @@ def add_area():
 
     return render_template("add_area.html")
 
-@main.route("/del")
-def delete_data():
-    try:
-        db.session.query(Area).delete()
 
-        # This SQL command resets the auto-increment counter for the table to 1
-        for table in ["area"]:
-            db.session.execute(text(f"ALTER TABLE {table} AUTO_INCREMENT = 0"))
-            pass
 
+def move_element_with_new_id_sort(part_id_param: int, new_id_sort: int):
+    """moves an element to a new position, updates the indeces of the oder elements
+    
+    Keyword arguments:
+    part_id_param -- id the id of the part of which the order beeing changed
+    new_id_sort -- position where the element shoult go to
+    Return: none
+    """
+    
+    orig_id_sort = Cart.query.filter_by(id = part_id_param).first().id_sort
+    
+    diff = new_id_sort - orig_id_sort
+
+    if diff > 0:
+        Cart.query.filter(Cart.id_sort == orig_id_sort).update({Cart.id_sort: (-1)})
+        Cart.query.filter(Cart.id_sort.between(orig_id_sort, new_id_sort)).\
+                update({Cart.id_sort: Cart.id_sort - 1}, synchronize_session=False)
+        Cart.query.filter(Cart.id_sort == -1).update({Cart.id_sort: new_id_sort})
+    
+    if diff < 0:
+        Cart.query.filter(Cart.id_sort == orig_id_sort).update({Cart.id_sort: (-1)})
+        Cart.query.filter(Cart.id_sort.between(new_id_sort, orig_id_sort)).\
+                update({Cart.id_sort: Cart.id_sort + 1}, synchronize_session=False)
+        Cart.query.filter(Cart.id_sort == -1).update({Cart.id_sort: new_id_sort})
+    
+    db.session.commit()
+
+def reset_cart_and_autoincrement():
+    # Function to delete all data from the Cart table and reset the auto-increment counter
+    db.session.query(Cart).delete()
+    db.session.execute(text("ALTER TABLE cart AUTO_INCREMENT = 0"))
+    db.session.commit()
+
+def change_quantity(id, new_val):
+    Cart.query.filter(Cart.id == id).update({Cart.quantity: new_val})
+    db.session.commit()
+
+def delete_item(id):
+    element_to_delete = Cart.query.get(id)
+    if element_to_delete:
+        beg_sort_id = element_to_delete.id_sort
+        db.session.delete(element_to_delete)
+        Cart.query.filter(Cart.id_sort > beg_sort_id).\
+            update({Cart.id_sort: Cart.id_sort - 1})
+        
         db.session.commit()
-    except Exception as e:
-        log.info(e)
-        db.session.rollback()
 
-    return jsonify({"message": "Data deleted successfully"})
+def load_cart_data():
+    cart_data = Cart.query.all()
+    result = []
+
+    for cart_item in cart_data:
+        result.append(
+            {
+                "id": cart_item.id,
+                "id_sort": cart_item.id_sort,
+                "stock": cart_item.stock,
+                "container": cart_item.container,
+                "quantity": cart_item.quantity,
+            }
+        )
+
+    return sorted(result, key=lambda x: x["id_sort"])
+
+def add_cart_to_stack():
+    cart_json = load_cart_data()
+
+    new_ops = []
+
+    for order in cart_json:
+        cont = order["container"]
+        db_cont = Container.query.get_or_404(cont)
+        db_cont.target_location = 0
+        new_ops.append([db_cont.current_location, 0])
+    
+    db.session.commit()
+
+    response = requests.post(api_url + "afss", json={"new_operations": new_ops})
+
+    if response != "200":
+        logcr(f"error adding orders to stack")
+
+
+def get_highest_or_default_cart():
+    if db.session.query(Cart).count() == 0:
+        return 0
+    else:
+        highest = db.session.query(db.func.max(Cart.id_sort)).scalar()
+        return highest
+
+
+@main.route("/cart", methods=["GET", "POST"])
+def cart():
+    if request.method == "POST":
+        
+        data = request.get_json()
+        log.info(f'data {type(data)}: {data}')
+
+        if "order_cart" in data.keys():
+            add_cart_to_stack()
+            
+        if "change_cart" in data.keys():
+            part_id = data["change_cart"]["id"]
+            new_index = data["change_cart"]["new_index"]
+            move_element_with_new_id_sort(part_id, new_index)
+        
+        if "reset_cart" in data.keys():
+            log.info("resetting cart")
+            reset_cart_and_autoincrement()
+
+        if "change_quant" in data.keys():
+            id = data["change_quant"]["id"]
+            new_val = data["change_quant"]["new_quant"]
+            change_quantity(id, new_val)
+        
+        if "delete_item" in data.keys():
+            id = data["delete_item"]["id"]
+            delete_item(id)
+        
+        data = load_cart_data()
+        return render_template("cart_table.html", data=data)
+    
+    data = load_cart_data()
+    return render_template("cart.html", data = data)
+
 
 
 

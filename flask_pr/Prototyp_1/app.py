@@ -480,26 +480,20 @@ class OrderSubmitFiled(FlaskForm):
 
 @main.route("/cart", methods=["GET", "POST"])
 def cart():
-    form = OrderSubmitFiled()
+
     if request.method == "POST":
         
         data = request.form.to_dict()
         log.info(f'data {type(data)}: {data}')
 
-        if ("num_box_max" in data.keys()) and ("submit_button" in data.keys()):
-            log.info(f'form {type(form)}: {form}')
-            max_out = form.num_box_max.data
-            add_orders_to_stack(int(max_out))
-            return redirect(url_for("main.api_instructions_afss"))
-
         if "change_cart" in data.keys():
             part_id = json.loads(data["change_cart"])["id"]
             new_index = json.loads(data["change_cart"])["new_index"]
-            log.info(f"cart {type(data)}: {data}, {part_id} , {new_index}")
+            logcb(f"cart {type(data)}: {data}, {part_id} , {new_index}")
             move_element_with_new_id_sort(part_id, new_index)
         
         if "reset_cart" in data.keys():
-            log.info("resetting cart")
+            logcb("resetting cart")
             reset_cart_and_autoincrement()
 
         if "change_quant" in data.keys():
@@ -515,10 +509,9 @@ def cart():
         return render_template("cart_table.html", data=data)
     
     
-
-
     data = load_cart_data()
-    return render_template("cart.html", data=data, OrderSubmitFiled = form)
+    return render_template("cart.html", data=data)
+
 
 @main.route("/api/instructions/afss", methods=["GET", "POST"])
 def api_instructions_afss():

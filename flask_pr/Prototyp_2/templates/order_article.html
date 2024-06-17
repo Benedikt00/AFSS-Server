@@ -17,7 +17,12 @@ Order Article
     {% if stocks != "" %}
     {% for stock in stocks %}
     <div class="selectable" id="{{stock.id}}">
-        <p>In container {{ stock.container }} Quantity: {{ stock.quantity }}</p>
+        <p>In container {{ stock.container }} Quantity: {{ stock.quantity }} 
+            {% if stock.reserved_quantity != 0 %}
+                    (Reserved: {{stock.reserved_quantity}})
+            {% endif %}
+            
+        </p>
     </div>
     {% endfor %}
     {% else %}

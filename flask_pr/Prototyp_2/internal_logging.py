@@ -16,10 +16,10 @@ class bcolors:
     UNDERLINE = "\033[4m"
 
 def logcb(var):
-    log.info(f"{type(var)}: {bcolors.OKBLUE} {var} {bcolors.ENDC}")
+    log.debug(f"{type(var)}: {bcolors.OKBLUE} {var} {bcolors.ENDC}")
 
 def logcc(var):
-    log.info(f"{type(var)}: {bcolors.OKCYAN} {var} {bcolors.ENDC}")
+    log.debug(f"{type(var)}: {bcolors.OKCYAN} {var} {bcolors.ENDC}")
 
 def logcr(var):
-    log.info(f"{type(var)}: {bcolors.WARNING} {var} {bcolors.ENDC}")
+    log.debug(f"{type(var)}: {bcolors.WARNING} {var} {bcolors.ENDC}")

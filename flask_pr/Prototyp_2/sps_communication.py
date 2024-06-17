@@ -10,8 +10,13 @@ class sps_com():
         self.url = ip_address + "/api/jsonrpc"
 
         self.com_db = "\"http_com\""
+    
+    def new_ip_address(self, ip):
+        self.url = ip + "/api/jsonrpc"
+        self.ip_address = ip
 
     def connect_to_sps(self, username, password):
+        logcb(f"opiosetg {self.url}")
         headers = {
             'Content-Type': 'application/json'
         }
@@ -29,6 +34,9 @@ class sps_com():
             response = requests.post(self.url, data=json.dumps(data), headers=headers, verify=False)
             response.raise_for_status()  # Raise an exception for HTTP errors
             req = json.loads(response.content.decode('utf-8'))
+            logcb(f"Connected to {self.ip_address}: {req}")
+            if "error" in req.keys():
+                return req["error"]["message"]
             token = req["result"]["token"]
             self.session_token = token
             self.session_id += 1
@@ -36,7 +44,7 @@ class sps_com():
 
         except requests.exceptions.HTTPError as http_err:
             logcr(f"HTTP error occurred: {http_err}")
-            return err
+            return http_err
         except Exception as err:
             logcr(f"Other error occurred: {err}")
             return err

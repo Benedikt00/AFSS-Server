@@ -69,7 +69,7 @@ def afss_tset():
     return "200"        
 
 @api.route("/afss", methods=["GET", "POST"])
-def afss_stack():
+def afss():
     if request.method == "POST":
         req = request.get_json()
 
@@ -95,6 +95,8 @@ def afss_stack():
         if "new_operations" in req.keys():
             for pair in req["new_operations"]:
                 afss_stack.norm_storing_operation(pair[0], pair[1])
+            
+            return "200"
 
         if "get_state" in req.keys():
             return afss_stack.get_system_state()
@@ -102,6 +104,11 @@ def afss_stack():
         if "set_state" in req.keys():
             afss_stack.read_state = req["set_state"]
             return "200"
+        
+        if "log_stack" in req.keys():
+            return afss_stack.show_stack()
+            
+
     
     if request.method == "GET":
         return jsonify("415")

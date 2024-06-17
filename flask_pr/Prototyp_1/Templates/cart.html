@@ -27,9 +27,6 @@
     {% endif %}
     
     
-
-
-
     <script>
         var draggedRow;
 
@@ -81,34 +78,6 @@
             last_op = new_op
         }
 
-        function send_xhr(header, content, callback) {
-            var xhr = new XMLHttpRequest();
-            xhr.open('post', '{{ url_for("main.cart")}}', true);
-
-            var formData = new FormData();
-            formData.append(header, content);
-
-            xhr.onload = function () {
-                if (xhr.status === 200) {
-                    console.log('Form submitted successfully');
-                    // Call the callback function with the response
-                    callback(xhr.response);
-                } else {
-                    console.error('Form submission failed');
-                    // Call the callback function with an error flag
-                    callback(null, 'Form submission failed');
-                }
-            };
-
-            xhr.onerror = function () {
-                console.error('Request failed');
-                // Call the callback function with an error flag
-                callback(null, 'Request failed');
-            };
-
-            xhr.send(formData);
-        }
-
 
         function drop_el(event, id) {
             var el = event.currentTarget;
@@ -117,46 +86,51 @@
             }
             console.log(el && el.rowIndex + " " + id);
 
-            send_xhr('change_cart', JSON.stringify({ "id": id, "new_index": el && el.rowIndex })
-                , function (response, error) {
-                    if (response !== null) {
-                        // Use the response variable here
-                        document.getElementById("cart").innerHTML = response
-                    } else {
-                        // Handle the error
-                        console.error('Error:', error);
-                    }
-                });
+            send_xhr({'change_cart': {"id": id, "new_index": el && el.rowIndex }}, set_cart)
+                
+                
 
         }
 
         function reset_cart() {
-            send_xhr('reset_cart', JSON.stringify({})
-                , function (response, error) {
-                    if (response !== null) { document.getElementById("cart").innerHTML = response // probably no reload necassary
-                    } else { console.error('Error:', error); };
-                })
+            send_xhr({'reset_cart': ""}, set_cart)
 
         }
         function change_quant(id, val) {
             console.log(id)
             console.log(val)
-            send_xhr('change_quant', JSON.stringify({ "id": id, "new_quant": val })
-                , function (response, error) {
-                    if (response !== null) {
-                        //console.log(response)
-                        // inner html does not need to be reloaded, save processing time
-                    } else { console.error('Error:', error); };
-                })
+            sendData({'change_quant': { "id": id, "new_quant": val }})
+                
         }
 
         function delete_item(id){
-            send_xhr('delete_item', JSON.stringify({ "id": id})
-                , function (response, error) {
-                    if (response !== null) {
-                        document.getElementById("cart").innerHTML = response
-                    } else { console.error('Error:', error); };
-                })
+            sendData({'delete_item': { "id": id}}, set_cart)
+                
+        }
+
+        function set_cart(response){
+            document.getElementById("cart").innerHTML = response
+        }
+
+        function sendData(data, callback) {
+            var xhr = new XMLHttpRequest();
+            var url = "{{url_for('main.cart')}}";
+    
+            xhr.open("POST", url, true);
+            xhr.setRequestHeader("Content-Type", "application/json");
+    
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    // Request was successful, handle response here if needed
+                    //console.log(xhr.responseText);
+                    callback(xhr.responseText)  // 2/2 statdessen braucht man eine callback funkltion und muss das so klobig machen
+    
+    
+                }
+            };
+    
+            var jsonData = JSON.stringify(data);
+            xhr.send(jsonData);
         }
 
     </script>

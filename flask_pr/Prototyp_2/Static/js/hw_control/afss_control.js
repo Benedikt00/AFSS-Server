@@ -1,48 +1,4 @@
-{% extends "base_template.html" %}
-
-{% block title %}AFSS-Control{% endblock %}
-
-{% block head %}
-<link rel="stylesheet" href="{{ url_for('static', filename='afss_control.css') }}">
-
-{% endblock %}
-
-
-{% block content %}
-
-<style>
-    
-</style>
-
-<div id="conf">
-    <div class="log_inp">
-        <label>IP-Address</label>
-        <input type="text" id="ipv4" name="ipv4" placeholder="https://xxx.xxx.xxx.xxx" value="{{ip}}" />
-    </div>
-
-    <div class="log_inp">
-        <label>Username</label>
-        <input id="username" type="text" value="{{username}}" />
-    </div>
-    <div class="log_inp">
-        <label>Password</label>
-        <input type="text" id="password" value="{{password}}" />
-    </div>
-    <button onclick="connect_to_client()">Connect</button>
-</div>
-
-<div id="connection_return_data"></div>
-
-{% endblock %}
-
-{% block js %}
-<!-- <script src="{{ url_for('static', filename='js/hw_control/afss_control.js') }}">
-
-
-
-</script> -->
-<script>
-    var z_achse = 0
+var z_achse = 0
     var förderband = 0
     var ausfahrer = 0
 
@@ -371,8 +327,3 @@
 
         return true;
     }
-
-</script>
-
-
-{% endblock %}

@@ -17,6 +17,7 @@ debug_connection = sps_com(Config.CLIENT_SPS1_IP)
 def index():
     return render_template("hw_control/dashboard.html")
 
+#TODO: Implement
 @dashb.route("/visu/afss", methods=["GET", "POST"])
 def visu_afss():
     if request.method == "POST":
@@ -38,20 +39,22 @@ def control_afss():
             if "connect_to_client" in req.keys():
                 logcb("Connect to client")
                 ip = req["connect_to_client"]["ip"]
+                
                 #start_time = req["connect_to_client"]["start_time"]/1000
                 start_time = round(time.time()) 
                 user = req["connect_to_client"]["creds"]["username"]
                 password = req["connect_to_client"]["creds"]["password"]
             
                 if ip != Config.CLIENT_SPS1_IP:
-                    debug_connection.ip_address = ip
+                    logcb(f"changed ip {ip}")
+                    debug_connection.new_ip_address(ip)
 
                 status = debug_connection.connect_to_sps(user, password)
 
-                #logcb(f"start {start_time}, now: {time.time()}")
+                logcb(f"status {status}")
 
                 ping = round(time.time()) - start_time
-                return get_template_attribute("hw_control/macros_for_afss_control.html", "connection_return")(status, ping, debug_connection.session_token)
+                return get_template_attribute("hw_control/macros_for_afss_control.html", "connection_return")(str(status), ping, debug_connection.session_token)
 
             if "ping" in req.keys():
                 debug_connection.ping_sps()

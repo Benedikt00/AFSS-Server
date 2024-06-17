@@ -55,7 +55,6 @@ class Categories(db.Model):
     title = db.Column(db.String(50), primary_key=True)
     unit = db.Column(db.String(10))
     prefixes = db.Column(db.JSON)
-    
 
 class PrimaryGroup(db.Model):
     __tablename__ = 'primary_groupes'
@@ -115,6 +114,7 @@ class StackPrioAfss(db.Model):
 
 class Cart(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    id_sort = db.Column(db.Integer)
     stock = db.Column(db.Integer)
     container = db.Column(db.Integer)
     quantity = db.Column(db.Integer)

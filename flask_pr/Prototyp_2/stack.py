@@ -81,6 +81,8 @@ class instruction_stack_afss():
         Return: return_description
         """
         
+        logcb(f"Order: {order}")
+
         order_id = self.order_id
 
         for i, instruction in enumerate(order):
@@ -164,6 +166,9 @@ class instruction_stack_afss():
 
 
     def generate_path(self, start_location, end_location): #box moving operation
+
+        start_location = Location.query.get_or_404(start_location)
+        end_location = Location.query.get_or_404(end_location)
 
         start_area = start_location.area
         end_area = end_location.area
@@ -256,19 +261,21 @@ class instruction_stack_afss():
 
     def request_box_return(self):
         instruction = [{"BR": {}}]
-        order = self.create_order(instruction)
+        order = self.create_order(instruction)#TODO: ?
         self.create_order(order, interrupt=True)
 
 
     def insert_storing_operation(self, start_location, end_location):
         path = self.generate_path(start_location, end_location)
-        order = self.create_order(path)
-        self.create_order(order, interrupt=True)
+        self.create_order(path, interrupt=True)
 
     def norm_storing_operation(self, start_location, end_location):
+        logcb(f"op: {start_location} -> {end_location}")
         path = self.generate_path(start_location, end_location)
-        order = self.create_order(path)
-        self.create_order(order)
+
+        self.create_order(path)
+
+
 
     def has_lower_order_id(self, given_order_id):
         for key, instructions in self.stack.items():

@@ -1,0 +1,45 @@
+#cart {
+    margin: 0 auto;
+}
+
+td,
+tr,
+th {
+    border: 1px solid rgb(165, 165, 165);
+    border-collapse: collapse;
+    cursor: grab;
+    /* Change cursor style */
+}
+
+td{
+    height: 30px;
+}
+
+tr{
+    text-align: center;
+}
+
+table {
+    color: rgb(102, 102, 102);
+    margin: 5vh auto 0 auto;
+    border-collapse: collapse;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    width: 50vw;
+}
+
+/* Alternate row color styling */
+tr:nth-child(even) {
+    background-color: #929292;
+    /* Adjust color as needed */
+}
+
+.quant_inp{
+    max-width: 30px;
+}
+
+.delete_btn{
+    background-color: transparent;
+    border: 0;
+}

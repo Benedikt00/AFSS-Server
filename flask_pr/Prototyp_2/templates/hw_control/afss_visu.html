@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,6 +8,7 @@
 
     <title>AFSS-Visualisierung</title>
 </head>
+
 <body>
     {% import "hw_control/afss_visu_macros.html" as macros%}
 
@@ -22,12 +24,40 @@
         <div class="back">
             <a href="{{url_for('dashb.index')}}">←</a>
         </div>
-        
+
     </div>
 
-<script>
+    <script>
+        
+        function sendData(data, callback) {
+            var xhr = new XMLHttpRequest();
+            var url = "{{url_for('dashb.visu_afss')}}";
+
+            xhr.open("POST", url, true);
+            xhr.setRequestHeader("Content-Type", "application/json");
+
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    callback(xhr.responseText);
+                }
+            };
+
+            var jsonData = JSON.stringify(data);
+            xhr.send(jsonData);
+        }
 
 
-</script>
+        function get_stack_data() {
+            sendData({ "log_stack": "" }, function t(d) {
+                document.getElementsByClassName("stack_terminal")[0].innerHTML = d
+            })
+        }
+
+        get_stack_data()
+
+
+
+    </script>
 </body>
+
 </html>

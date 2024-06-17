@@ -21,13 +21,13 @@ def handle_jsonrpc():
     try:
         # Get the JSON data from the request
         data = request.get_json()
-
+        print(f"data: {data}")
         # Process the JSON-RPC request (example implementation)
         if data['jsonrpc'] != '2.0':
             raise ValueError('Invalid JSON-RPC version')
 
         method = data['method']
-        if params in data.keys():
+        if "params" in data.keys():
             params = data.get('params', {})
         id = data.get('id')
 
@@ -67,6 +67,7 @@ def handle_jsonrpc():
             'id': data.get('id') if 'id' in data else None
         }
 
+    print(f"response: {response}")
     # Return the JSON response
     return jsonify(response)
 

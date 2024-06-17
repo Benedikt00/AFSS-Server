@@ -6,7 +6,9 @@
         <li><a href="/">Home</a></li>
         <li><a href="{{ url_for('main.new_article') }}">New Articles</a></li>
         <li><a href="{{ url_for('main.search_articles') }}">Search Articles</a></li>
+        <li><a href="{{ url_for('main.cart') }}">Cart</a></li>
         
+
         <li class="dropdown">
             <a href="#" class="dropbtn">Add stuff</a>
             <div class="dropdown-content">
@@ -15,7 +17,7 @@
                 <a href="{{ url_for('main.add_container') }}">Container</a>
             
                 <!-- <a href="#">Link 3</a> -->
-            </div>
+            </div> 
         </li>
         <li><a href="{{ url_for('manage_db.index') }}">DB-management</a></li>
         <li><a href="{{ url_for('afss_templates.storage_templates') }}">AFSS Templates</a></li>

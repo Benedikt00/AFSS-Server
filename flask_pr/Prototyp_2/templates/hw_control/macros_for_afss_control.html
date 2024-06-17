@@ -1,19 +1,58 @@
 {% macro connection_return(status, ping, token) -%}
-{{status}}<br>
+<div id="status_container">
+    <div id="status_info">
+        <span>Status: {{ status }}</span>
+        {% if "200" in status %}
+        <data id="status_con" style="visibility: hidden">200</data>
+        <span>Ping: {{ ping }} ms</span>
+        <span>Token: {{ token }}</span>
+        <div id="test_mode">
+            <button onclick="enable_testmode()" id="test_mode_button">Enable Testmode</button>
+        </div>
+        </div>
+        <div id="testwindow" style="display: none;">
 
-
-{% if "200" in status %}
-<data id="status_con" style="visibility: hidden">200</data>
-Ping: {{ping}} ms <br>
-
-Token: {{token}}
-
-<div id="test_mode">
-	<button onclick="enable_testmode()">Enable Testmode</button>
+            <div id="draw_container">
+                <div id="canvasContainer">
+                    <canvas id="canvas"></canvas>
+                </div>
+                <div class="controls">
+                    <button class="control-btn" id="left">◀</button>
+                    <button class="control-btn" id="right">▶</button>
+                    <button class="control-btn" id="up">▲</button>
+                    <button class="control-btn" id="down">▼</button>
+                </div>
+                <div id="position">Position: (X: 50, Y: 50)</div>
+                
+            </div>
+            <div class="slider-container">
+                <div class="slider-wrapper">
+                    <p>Ausfahrer</p>
+                    <button class="control-btn" id="leftBtn1">◀</button>
+                    <input type="range" min="0" max="100" value="50" class="slider" id="slider1">
+                    <span id="value1">50</span>
+                    <button class="control-btn" id="rightBtn1">▶</button>
+                </div>
+                <div class="slider-wrapper">
+                    <p>Querförderer</p>
+                    <button class="control-btn" id="leftBtn2">◀</button>
+                    <input type="range" min="0" max="100" value="50" class="slider" id="slider2">
+                    <span id="value2">50</span>
+                    <button class="control-btn" id="rightBtn2">▶</button>
+                </div>
+                <div class="variable-container">
+                    <p>Förderband</p>
+                    <button class="control-btn" id="decreaseFörderband">◀</button>
+                    <span id="förderbandValue">0</span>
+                    <button class="control-btn" id="increaseFörderband">▶</button>
+                </div>
+            </div>
+        
+        {% endif %}
+    </div>
+    
 </div>
 
-
-{% endif %}
 
 
 {%- endmacro %}
