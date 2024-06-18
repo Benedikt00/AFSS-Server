@@ -1,6 +1,9 @@
 import requests
 import json
 from internal_logging import *
+
+#TODO: Make auto login 
+
 class sps_com():
     def __init__(self, ip_address):
         self.ip_address = ip_address
@@ -16,6 +19,10 @@ class sps_com():
         self.ip_address = ip
 
     def connect_to_sps(self, username, password):
+
+        self.username = username
+        self.password = password
+
         logcb(f"opiosetg {self.url}")
         headers = {
             'Content-Type': 'application/json'
@@ -45,6 +52,7 @@ class sps_com():
         except requests.exceptions.HTTPError as http_err:
             logcr(f"HTTP error occurred: {http_err}")
             return http_err
+        
         except Exception as err:
             logcr(f"Other error occurred: {err}")
             return err
@@ -71,14 +79,16 @@ class sps_com():
         data = {"jsonrpc":"2.0", "method":"Api.Ping", "id": self.ses_id()}
         self.send_data_to_sps(data)
 
-
     def write_variable(self, var_name, value):
         data = {"id": self.ses_id(), "jsonrpc": "2.0", "method": "PlcProgram.Write", "params": {"var": f"{self.com_db}.{var_name}", "value": str(value)}}
         req = self.send_data_to_sps(data)
         return req
     
     def read_variable(self, var_name):
-        pass
+        data = {"id": self.ses_id(), "jsonrpc": "2.0", "method": "PlcProgram.Read", "params": {"var": f"{self.com_db}.{var_name}"}}
+        req = self.send_data_to_sps(data)
+        logcc(req)
+        return req["result"]
 
     def write_multiple_variables(self, var_dict):
         das = []

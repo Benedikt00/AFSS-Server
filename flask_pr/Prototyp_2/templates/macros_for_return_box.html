@@ -1,0 +1,30 @@
+{% macro display_cont(cont, stocks) -%}
+
+        <style>
+        .stocks_in_cont{
+                width: 40%;
+                display: flex;
+                flex-direction: right;
+                
+        }
+        .stocks_in_cont img {
+                max-width: 50px;
+        }
+        </style>
+        <p id="barcode">{{cont.barcode}}</p>
+        <p>{{cont.size}}</p>
+        {% for stock in stocks %}
+        <div class="stocks_in_cont">
+                <img src="{{ url_for('main.get_image_product', image_name=stock['picture'] ) }}">
+
+                <p>Q: {{stock["quantity"]}}</p>
+                <p>R_Q: {{stock["reserved_quantity"]}}</p>
+                <p>Name: {{stock["article_name"]}}</p>
+        </div>
+        {% endfor %}
+        
+        <button onclick="store_container({{cont.barcode}})">Store Container</button>
+        <div id="storage_req_ret">
+        
+        </div>
+{%- endmacro %}

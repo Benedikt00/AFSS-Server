@@ -424,9 +424,9 @@ def order_api():
             response = requests.post(api_url + "afss", json={"new_operations": [cont.current_location, cont.target_location]})
 
             if response != "200":
-                logcr(f"error adding orders to stack")
-
-            return "Added to stack (coming soon)"
+                return "error adding orders to stack"
+            
+            return "200"
         
         if "add_to_cart" in req.keys():
             logcb(req['add_to_cart'])
@@ -758,7 +758,15 @@ def cart():
     data = load_cart_data()
     return render_template("cart.html", data = data)
 
+@main.route("/return_box", methods=["GET", "POST"])
+def return_box():
+    if request.method == "POST":    
+        data = request.get_json()
+        log.info(f'data {type(data)}: {data}')
+    
+    
 
+    return render_template("return_box.html")
 
 
 if __name__ == "__main__":

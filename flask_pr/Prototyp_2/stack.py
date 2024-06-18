@@ -5,6 +5,7 @@ from models import *
 import logging as log
 from internal_logging import *
 
+#TODO: need too set current location after completing the order
 
 class instruction_stack_afss():
     def __init__(self):
@@ -66,7 +67,6 @@ class instruction_stack_afss():
             strang += f"{x}: {self.stack[x]}\n"
 
         return strang
-
 
     def is_location_in_afss(self, location):
         return str(location)  in self.areas.keys()
@@ -160,7 +160,7 @@ class instruction_stack_afss():
         return current_orders 
 
 
-    def pos_z_zero(pos):
+    def pos_z_zero(self, pos):
         pos["z"] == 0
         return pos
 
@@ -240,11 +240,12 @@ class instruction_stack_afss():
 
             if end_area != 0: # L0 to afss
                 end_xyz = end_location.position
-
+                logcc(f"end: {(self.get_FX0_for_area(end_area))}")
+                logcc(f"sd: {self.pos_z_zero(self.get_FX0_for_area(end_area))}")
                 inst = [
-                        {"MOV": {"area": end_area, "pos": self.pos_z_zero(self.get_FX0_for_area(start_area)), "dir": 1, "rel": [0]}},
+                        {"MOV": {"area": end_area, "pos": self.pos_z_zero(self.get_FX0_for_area(end_area)), "dir": 1, "rel": [0]}},
                         {"MOV": {"area": self.fb, "pos": f_diff - self.shifter_clearance, "rel": [0]}},
-                        {"MOV": {"area": end_area + self.shifter_coeff, "pos": self.shifters[start_area_s], "rel": [0]}},
+                        {"MOV": {"area": end_area + self.shifter_coeff, "pos": self.shifters[end_area_s], "rel": [0]}},
                         
                         {"MOV": {"area": self.fb, "pos": self.shifter_clearance, "rel": [-1, -2]}},
 
@@ -261,8 +262,8 @@ class instruction_stack_afss():
 
     def request_box_return(self):
         instruction = [{"BR": {}}]
-        order = self.create_order(instruction)#TODO: ?
-        self.create_order(order, interrupt=True)
+        
+        self.create_order(instruction, interrupt=True)
 
 
     def insert_storing_operation(self, start_location, end_location):
@@ -274,7 +275,6 @@ class instruction_stack_afss():
         path = self.generate_path(start_location, end_location)
 
         self.create_order(path)
-
 
 
     def has_lower_order_id(self, given_order_id):
@@ -302,7 +302,6 @@ class instruction_stack_afss():
                 if instruction['order_id'] == order_id:
                     return True
         return False
-
 
     def get_and_delete_instruction(self, instruction_id):
         for key, instructions in self.stack.items():

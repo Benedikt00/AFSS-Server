@@ -1,0 +1,119 @@
+{% extends "base_template.html" %}
+{% block title %}
+Return
+{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='return_box.css') }}">
+{% endblock %}
+
+
+{% block content %}
+<style>
+</style>
+
+<div id="return_div">
+    <p>Check availability: </p><input type="checkbox" id="check_availability" checked="checked">
+    <button id="return_button" onClick="request_return()">Return Box</button>
+    <p id="return_status"></p>
+</div>
+<div id="barcode_reading">
+    <div id="box_display"></div>
+    <button onClick="reread_barcode()">↺</button>
+</div>
+
+{% endblock %}
+
+
+{% block js %}
+<script>
+
+    var need_to_get_barcode = true
+    var need_to_check_availability = true
+
+    function reread_barcode(){
+        check_box_return_ready()
+        need_to_get_barcode = true
+        read_barcode()
+    }
+
+    function read_barcode(){
+        sendDataApi({"afss_barcode_reading": ""}, set_box_display)
+        
+    }
+
+    function set_box_display(dt){
+        document.getElementById("box_display").innerHTML = dt
+        if (dt.includes("404")){
+            need_to_get_barcode = true
+        }else{
+            need_to_get_barcode = false
+        }
+    }
+
+    var return_ready
+
+    function request_return() {
+        sendDataApi({ "afss_return_request": "" }, set_return_status)
+    }
+
+    check_box_return_ready();
+
+    function checking_box_return(){
+        if (document.getElementById("check_availability").checked){
+            check_box_return_ready()
+        }
+    }
+
+    var intervalId = setInterval(checking_box_return, 5000);
+
+
+    function check_box_return_ready() {
+        sendDataApi({ "return_ready": "" }, set_return_ready)
+    }
+
+    function store_container(barcode){
+        sendDataApi({"store_container": barcode}, set_storage_req_ret)
+
+    }
+
+    function set_storage_req_ret(dt){
+        document.getElementById("storage_req_ret").innerHTML = dt
+    }
+
+    function set_return_ready(dt) {
+        const button = document.getElementById("return_button");
+        if (dt) {
+            button.className = "green_button";
+            return_ready = true;
+            if (need_to_get_barcode){read_barcode()}
+        } else {
+            button.className = "return_button";
+            return_ready = false;
+        }
+    }
+
+    function set_return_status(sd) {
+        document.getElementById("return_status").innerHTML = sd
+    }
+
+    function sendDataApi(data, callback) {
+        var xhr = new XMLHttpRequest();
+        var url = "{{url_for('api.afss')}}";
+
+        xhr.open("POST", url, true);
+        xhr.setRequestHeader("Content-Type", "application/json");
+
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState === 4 && xhr.status === 200) {
+                callback(xhr.responseText);
+            }
+        };
+
+        var jsonData = JSON.stringify(data);
+        xhr.send(jsonData);
+    }
+
+</script>
+
+{% endblock %}

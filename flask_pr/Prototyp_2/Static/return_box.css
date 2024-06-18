@@ -1,0 +1,47 @@
+.return_button {
+	box-shadow: inset 0px 34px 0px -15px #cf1c00;
+	background-color: #ba1900;
+	border: 1px solid #ececec;
+	display: inline-block;
+	cursor: pointer;
+	color: #ffffff;
+	font-family: Arial;
+	font-size: 15px;
+	font-weight: bold;
+	padding: 9px 23px;
+	text-decoration: none;
+	text-shadow: 0px -1px 0px #7a2a1d;
+}
+
+.return_button:hover {
+	background-color: #ee1c00;
+}
+
+.return_button:active {
+	position: relative;
+	top: 1px;
+}
+
+.green_button {
+	box-shadow: inset 0px 34px 0px -15px #009900;
+	background-color: #008800;
+	border: 1px solid #ececec;
+	display: inline-block;
+	cursor: pointer;
+	color: #ffffff;
+	font-family: Arial;
+	font-size: 15px;
+	font-weight: bold;
+	padding: 9px 23px;
+	text-decoration: none;
+	text-shadow: 0px -1px 0px #005500;
+}
+
+.green_button:hover {
+	background-color: #00cc00;
+}
+
+.green_button:active {
+	position: relative;
+	top: 1px;
+}

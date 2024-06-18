@@ -39,7 +39,11 @@ def handle_jsonrpc():
             result = {"token": "46290"}
         
         elif method == "PlcProgram.Read":
-            result = 501
+            if data["params"]["var"] == '"http_com".return_ready':
+                result = "true"
+
+            elif data["params"]["var"] == '"http_com".barcode':
+                result = "314091785"
 
         elif method == "PlcProgram.Write":
             result = {"sucsess": ""}
