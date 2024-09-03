@@ -1,0 +1,85 @@
+{% extends "base_template.html" %}
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='index.css') }}">
+
+{% endblock %}
+{% block title %}
+Home
+{% endblock %}
+
+{% block content %}
+<div id="online_status">
+    <div id="loading_bar"></div>
+</div>
+<h2>AFSS - The next gen storage Solution, now (mabye if there is money or no büroktratischer scheiss) in HTL-Mössingerstrasse</h2>
+
+<img id="main_img" src="{{ url_for('main.get_image', image_name='howl_.png' ) }}" alt="">
+
+{% endblock %}
+
+{% block js %}
+
+<script>
+
+    function get_avail(){
+        sendDataAPI_avail("", set_avail)
+    }
+
+    function set_avail(id){
+        if(id === "1"){
+            document.getElementById("online_status").style.backgroundColor = "orange";
+        }else if(id === "2"){
+            document.getElementById("online_status").style.backgroundColor = "green";
+        }else if(id === "0"){
+            document.getElementById("online_status").style.backgroundColor = "red";
+        }
+    }
+
+    get_avail()
+
+    function onLoadingComplete() {
+        get_avail()
+    }
+
+
+    // Detect when the animation ends
+    const loadingBar = document.getElementById("loading_bar");
+    loadingBar.addEventListener("animationend", () => {
+        onLoadingComplete();
+
+        // Restart the animation after the function call
+        loadingBar.style.animation = "none";  // Reset the animation
+        setTimeout(() => {
+            loadingBar.style.animation = "";  // Trigger the animation again
+            loadingBar.style.animation = "loadingAnimation 10s linear forwards";  // Restart the animation
+        }, 100);  // Small delay to restart the animation
+    });
+
+    function sendDataAPI_avail(data, callback) {
+        var xhr = new XMLHttpRequest();
+        var url = "{{url_for('api.availability')}}";
+    
+        xhr.open("POST", url, true);
+        xhr.setRequestHeader("Content-Type", "application/json");
+    
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState === 4 && xhr.status === 200) {
+                // Request was successful, handle response here if needed
+                //console.log(xhr.responseText);
+                callback(xhr.responseText)  // 2/2 statdessen braucht man eine callback funkltion und muss das so klobig machen
+    
+    
+            }
+        };
+    
+        var jsonData = JSON.stringify(data);
+        xhr.send(jsonData);
+    }
+
+
+
+
+</script>
+
+{% endblock %}
+
