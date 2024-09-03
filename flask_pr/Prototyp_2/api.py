@@ -172,6 +172,9 @@ def afss():
         if "afss_return_request" in req.keys():
             afss_stack.request_box_return()
             return "200"
+        
+        if "reserve_band" in req.keys():
+            pass
 
         if "next_bmos" in req.keys():
             if req["next_bmos"] == "":
