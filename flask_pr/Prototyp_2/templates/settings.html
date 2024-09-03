@@ -1,0 +1,78 @@
+{% extends "base_template.html" %}
+{% block title %}
+Settings
+{% endblock %}
+
+{% block content %}
+{% import "macros_for_settings.html" as macros %}
+<style>
+    .hidden {
+        display: none;
+    }
+</style>
+<div id="values_container">
+    {{macros.setting_display(values)}}
+</div>
+{% endblock %}
+
+
+{% block js %}
+<script>
+function showInput(key) {
+    const valueElement = document.getElementById(key + '_value');
+    const inputElement = document.getElementById(key + '_input');
+    const changeButton = valueElement.nextElementSibling.nextElementSibling;
+    const saveButton = changeButton.nextElementSibling;
+    
+    // Hide the value element and change button, show the input field and save button
+    valueElement.classList.add('hidden');
+    changeButton.classList.add('hidden');
+    inputElement.classList.remove('hidden');
+    saveButton.classList.remove('hidden');
+    
+    // Set the input field value to the current value
+    inputElement.value = valueElement.innerText;
+}
+
+function set_value_container(dt){
+    document.getElementById("values_container").innerHTML = dt
+}
+
+function saveValue(key) {
+    const valueElement = document.getElementById(key + '_value');
+    const inputElement = document.getElementById(key + '_input');
+    const changeButton = valueElement.nextElementSibling.nextElementSibling;
+    const saveButton = changeButton.nextElementSibling;
+    
+    // Log the new value
+    sendData({"change": {"key": key, "val": inputElement.value}}, set_value_container)
+    
+    // Set the new value to the value element
+    valueElement.innerText = inputElement.value;
+    
+    // Hide the input field and save button, show the value element and change button
+    inputElement.classList.add('hidden');
+    saveButton.classList.add('hidden');
+    valueElement.classList.remove('hidden');
+    changeButton.classList.remove('hidden');
+}
+
+function sendData(data, callback) {
+    var xhr = new XMLHttpRequest();
+    var url = "{{url_for('main.settings')}}";
+
+    xhr.open("POST", url, true);
+    xhr.setRequestHeader("Content-Type", "application/json");
+
+    xhr.onreadystatechange = function () {
+        if (xhr.readyState === 4 && xhr.status === 200) {
+            callback(xhr.responseText)  
+        }
+    };
+
+    var jsonData = JSON.stringify(data);
+    xhr.send(jsonData);
+}
+</script>
+{% endblock %}
+

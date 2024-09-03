@@ -1,4 +1,4 @@
-FROM python:3.12
+FROM python:3.12.2
 
 # Set environment variables
 # Set the working directory in the container
@@ -11,7 +11,7 @@ COPY requirements.txt .
 RUN pip install -r requirements.txt
 
 # Copy the rest of the application code to the working directory
-COPY . /app
+COPY . ./app
 #COPY Templates Templates
 
 ENTRYPOINT [ "python" ]

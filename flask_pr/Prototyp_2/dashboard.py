@@ -13,16 +13,18 @@ dashb = Blueprint("dashb", __name__)
 
 debug_connection = sps_com(Config.CLIENT_SPS1_IP)
 
+
 @dashb.route("/")
 def index():
     return render_template("hw_control/dashboard.html")
 
-#TODO: Implement
+
+# TODO: Implement
 @dashb.route("/visu/afss", methods=["GET", "POST"])
 def visu_afss():
     if request.method == "POST":
         if request.data:
-            
+
             req = request.get_json()
 
             if "get_storage_flipper":
@@ -30,22 +32,25 @@ def visu_afss():
 
     return render_template("hw_control/afss_visu.html")
 
+
 @dashb.route("/control/afss", methods=["GET", "POST"])
 def control_afss():
     if request.method == "POST":
-        if request.data:    
+        if request.data:
             req = request.get_json()
 
             if "connect_to_client" in req.keys():
                 logcb("Connect to client")
                 ip = req["connect_to_client"]["ip"]
-                
-                #start_time = req["connect_to_client"]["start_time"]/1000
-                start_time = round(time.time()) 
+
+                # start_time = req["connect_to_client"]["start_time"]/1000
+                start_time = round(time.time())
                 user = req["connect_to_client"]["creds"]["username"]
                 password = req["connect_to_client"]["creds"]["password"]
-            
-                if ip != Config.CLIENT_SPS1_IP:
+
+                if (ip != Config.CLIENT_SPS1_IP) or (
+                    debug_connection.ip_address != Config.CLIENT_SPS1_IP
+                ):
                     logcb(f"changed ip {ip}")
                     debug_connection.new_ip_address(ip)
 
@@ -54,16 +59,20 @@ def control_afss():
                 logcb(f"status {status}")
 
                 ping = round(time.time()) - start_time
-                return get_template_attribute("hw_control/macros_for_afss_control.html", "connection_return")(str(status), ping, debug_connection.session_token)
+                return get_template_attribute(
+                    "hw_control/macros_for_afss_control.html", "connection_return"
+                )(str(status), ping, debug_connection.session_token)
 
             if "ping" in req.keys():
                 debug_connection.ping_sps()
                 return "200"
-            
+
             if "enable_testmode" in req.keys():
                 logcb("testmode")
                 status = debug_connection.enable_testmode()
-                return get_template_attribute("hw_control/macros_for_afss_control.html", "testwindow")(status)
+                return get_template_attribute(
+                    "hw_control/macros_for_afss_control.html", "testwindow"
+                )(status)
 
             if "update_position" in req.keys():
                 logcb("update_position")
@@ -71,8 +80,8 @@ def control_afss():
                 x = posis["x"]
                 y = posis["y"]
                 z = posis["z"]
-                a = posis["a"] # ausfahrer
-                f = posis["f"] # förderband
+                a = posis["a"]  # ausfahrer
+                f = posis["f"]  # förderband
 
                 debug_connection.write_variable("pos_x", x)
                 debug_connection.write_variable("pos_y", y)
@@ -80,9 +89,7 @@ def control_afss():
                 debug_connection.write_variable("pos_ausfahrer", a)
                 debug_connection.write_variable("pos_förderband", f)
 
-
-    return render_template("hw_control/afss_control.html", ip = Config.CLIENT_SPS1_IP)
-    
+    return render_template("hw_control/afss_control.html", ip=Config.CLIENT_SPS1_IP)
 
 
 @dashb.route("/visu/afss/api", methods=["GET", "POST"])

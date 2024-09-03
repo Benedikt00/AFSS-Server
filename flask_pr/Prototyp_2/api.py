@@ -1,5 +1,6 @@
 from flask import Blueprint, jsonify, render_template, request, get_template_attribute
-from sqlalchemy import func
+from pythonping import ping
+from sqlalchemy import func, text
 from extensions import db
 from models import *
 import random
@@ -42,6 +43,28 @@ def get_first_entry():
     return None
 
 
+def is_mysql_connection_alive():
+    try:
+        db.session.execute(text('SELECT 1'))
+        return True
+    except Exception as e:
+        logcb(e)
+        logcr("DB Connection Error, check if DB is online")
+        return False
+
+
+def ping_ip(ip):
+    try:
+        response = ping(ip, count=1, timeout=1)
+        
+        if response.success():
+            return True
+        else:
+            return False
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        return False
+
 def make_move_instruction(entry):
     loc_now = entry.loc_now
     loc_goal = entry.loc_goal
@@ -65,6 +88,10 @@ def get_new_location(cont):
 
 @api.route("/afss_test", methods=["GET", "POST", "PUT", "PATCH"])
 def afss_tset():
+    if request.method == "POST":
+        if request.data != "" and ("SIMATIC Controller" in request.headers["User-Agent"]):
+            req = json.loads(request.data)
+            logcb(f"requestsonne: {req}")
 
     request_data = {
         "method": request.method,
@@ -77,31 +104,78 @@ def afss_tset():
 
     logcb(f"{json.dumps(request_data, indent=2)}")
     logcb(f"{request.method}, afss_test")
+    
     return "200"
+
+@api.route("/availability", methods=["GET", "POST"])
+def availability():
+    spsip = Config.CLIENT_SPS1_IP
+    sps = ping_ip(spsip.replace("http://", "").split(":")[0])
+    db_con = is_mysql_connection_alive()
+
+    if not sps:
+        logcr("SPS not Online")
+
+    if not db_con:
+        logcr("DB not Online")
+
+    if sps and db_con:
+        return "2"
+    
+    if sps or db_con:
+        return "1"
+    
+    else:
+        return "0"
 
 
 @api.route("/afss", methods=["GET", "POST"])
 def afss():
+
+    if afss_sps.ip_address != Config.CLIENT_SPS1_IP:
+        afss_sps.new_ip_address(Config.CLIENT_SPS1_IP)
+
+    request_data = {
+        "method": request.method,
+        "headers": dict(request.headers),
+        "args": request.args.to_dict(),
+        "form": request.form.to_dict(),
+        "json": request.get_json(silent=True),
+        "data": request.data.decode("utf-8"),
+    }
+
+    logcb(f"{json.dumps(request_data, indent=2)}")
+
     if request.method == "POST":
-        req = request.get_json()
+
+        if request.data != "" and ("SIMATIC Controller" in request.headers["User-Agent"]):
+            try:
+                data = request.data
+                req = json.loads(data)[0]
+            except Exception as e:
+                request_data = {
+                "method": request.method,
+                "headers": dict(request.headers),
+                "args": request.args.to_dict(),
+                "form": request.form.to_dict(),
+                "json": request.get_json(silent=True),
+                "data": request.data.decode("utf-8"),
+                    }
+
+                logcr(f"API: Siemens Pfusch: {e} ")
+                logcr(f"{json.dumps(request_data, indent=2)}")
+
+        else:
+            req = request.get_json()
 
         # Storage Interrupt
         if "afss_return_request" in req.keys():
             afss_stack.request_box_return()
             return "200"
 
-        # Storage Identification
-        if "afss_return_data" in req.keys():
-            code = req["afss_return"]["barcode"]
-            cont = Container.query.filter_by(barcode=code).first()
-            if not cont:
-                return "404: Container not Found"
-
-            afss_stack.insert_storing_operation(0, get_empty_location(cont))
-
-            return "200"  # TODO
-
         if "next_bmos" in req.keys():
+            if req["next_bmos"] == "":
+                return "Schick was gescheites du hunt \"\" kanns da sparn"
             return jsonify(afss_stack.get_current_bmos(int(req["next_bmos"])))
 
         if "new_operations" in req.keys():

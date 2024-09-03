@@ -2,7 +2,7 @@ import os
 
 class Config():
 
-    prod = False
+    prod = os.environ.get("PROD", default=False)
 
         #id, distance from L0
     AFSS_AREAS = {"0": 0, "1" : 400, "2" : 600}
@@ -16,11 +16,9 @@ class Config():
         hostname = socket.gethostname()
         IP_ADDR = socket.gethostbyname(hostname)
 
-        PORT = os.environ(['PORT'])
+        PORT = os.environ['PORT']
         DOMAIN = f"{IP_ADDR}:{PORT}/"
 
-
-        QUERY_LIMIT_SOFT = 10
         SECRET_KEY = os.environ['FLASK_SECRET_KEY']
         ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', "webp"}
         UPLOAD_FOLDER = os.environ['UPLOAD_FOLDER']
@@ -35,7 +33,7 @@ class Config():
         SQLALCHEMY_DATABASE_URI = f"mysql://{MYSQL_USER}:{MYSQL_PASSWORD}@{MYSQL_HOST}:{MYSQL_PORT}/{MYSQL_DB}"
         
         
-        CLIENT_SPS1_IP = "https://10.130.110.195"
+        CLIENT_SPS1_IP = "http://127.0.0.1:5001"
 
     else:
         #import docker
@@ -46,13 +44,13 @@ class Config():
         hostname = socket.gethostname()
         
         IP_ADDR = socket.gethostbyname(hostname)
-        PORT = 5000
+        PORT = 5002
         DOMAIN = f"{IP_ADDR}:{PORT}/"
 
         SECRET_KEY = "f@ctory"
         
-        UPLOAD_FOLDER_PROD_PIC = r"C:\Users\bsimb\HTL Mössingerstrasse\AFSS-DA - Dokumente\Software\AFSS-Server\flask_pr\Prototyp_2\Static\product_pictures"
-        UPLOAD_FOLDER = r"C:\Users\bsimb\HTL Mössingerstrasse\AFSS-DA - Dokumente\Software\AFSS-Server\flask_pr\Prototyp_2\Static\images"
+        UPLOAD_FOLDER_PROD_PIC = r"C:\Users\bsimb\HTL Mössingerstrasse\AFSS-DA - Dokumente\AFSS-Server\flask_pr\Prototyp_2\Static\product_pictures"
+        UPLOAD_FOLDER = r"C:\Users\bsimb\HTL Mössingerstrasse\AFSS-DA - Dokumente\AFSS-Server\flask_pr\Prototyp_2\Static\images"
         MYSQL_PASSWORD = "factory"
         MYSQL_DB = "db_v1"
         MYSQL_USER = "root"

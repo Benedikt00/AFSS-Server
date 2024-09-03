@@ -61,7 +61,7 @@ def handle_jsonrpc():
             'id': id
         }
     except Exception as e:
-        # Create an error response in case of any exceptions
+        # Create an error response in case of any exceptions Prototyp_2\Static\product_pictures
         response = {
             'jsonrpc': '2.0',
             'error': {

@@ -4,7 +4,6 @@
             <p id="logo">AFSS</p>
         </li>
         <li><a href="/">Home</a></li>
-        <li><a href="{{ url_for('main.new_article') }}">New Articles</a></li>
         <li><a href="{{ url_for('main.return_box') }}">Return</a></li>
         <li><a href="{{ url_for('main.search_articles') }}">Search Articles</a></li>
         <li><a href="{{ url_for('main.cart') }}">Cart</a></li>
@@ -13,9 +12,10 @@
         <li class="dropdown">
             <a href="#" class="dropbtn">Add stuff</a>
             <div class="dropdown-content">
+                <a href="{{ url_for('main.new_article') }}">Article</a>
+                <a href="{{ url_for('main.add_container') }}">Container</a>
                 <a href="{{ url_for('main.add_stock') }}">Stock</a>
                 <a href="{{ url_for('main.add_area') }}">Area</a>
-                <a href="{{ url_for('main.add_container') }}">Container</a>
             
                 <!-- <a href="#">Link 3</a> -->
             </div> 
@@ -25,6 +25,7 @@
         <li><a href="{{ url_for('dashb.index') }}">Dashboard</a></li>
 
         <li id="wiki" title="Wiki"><a href="{{ url_for('wiki.wiki_index') }}">&#9432;</a></li>
+        <li id="settings" title="settings"><a href="{{ url_for('main.settings') }}">⚙️</a></li>
 
         {#{% if not session['access'] %}
         <li id="login"><a href="{{ url_for('main.login') }}">Login</a></li>
@@ -36,7 +37,7 @@
         <!-- Add more items as needed -->
         {# <li><a href="{{ url_for('') }}"></a></li> #}
 
-     <!-- css dazu in wiki/style.css -->
+    
 
     </ul>
 </nav>

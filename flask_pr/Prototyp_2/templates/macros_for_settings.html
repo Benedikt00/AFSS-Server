@@ -1,0 +1,23 @@
+{% macro setting_display(values) -%}
+<style>
+    .value-container {
+        width: 40%;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-evenly;
+    }
+</style>
+    {% for key, value in values.items() %}
+
+    <div class="value-container" data-key="{{ key }}">
+
+        <p class="name">{{ key }}:</p>
+        <p class="value" id="{{ key }}_value">{{ value }}</p>
+
+        <input type="text" id="{{ key }}_input" class="hidden">
+        <button class="change-button" onclick="showInput('{{ key }}')">Change</button>
+        <button class="save-button hidden" onclick="saveValue('{{ key }}')">Save</button>
+
+    </div>
+    {% endfor %}
+{%- endmacro %}

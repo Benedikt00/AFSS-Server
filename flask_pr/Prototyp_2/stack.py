@@ -7,6 +7,8 @@ from internal_logging import *
 
 #TODO: need too set current location after completing the order
 
+#TODO: einführen, dass das förderband/barcodescanner reserviert werden kann
+
 class instruction_stack_afss():
     def __init__(self):
         self.max_preload_length = 5
@@ -22,10 +24,12 @@ class instruction_stack_afss():
         self.pending_instructions = []
         self.interrupts_in_system = []
 
-        self.fb = "TB"
+        self.fb = "TB" # Förderband/Transportband bezeichnuing
         self.shifter_coeff = 10 # um den förderbandschieber vom schrank zu differenzieren ist der schieber des schrankes x das gerät x+10
         self.shifters = Config.AFSS_SHIFTER_POSITIONS
         self.shifter_clearance = - 250
+
+        
 
         self.real_state = {}
         
