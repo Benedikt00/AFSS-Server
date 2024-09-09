@@ -779,8 +779,8 @@ def add_cart_to_stack():
 
     response = requests.post(api_url + "afss", json={"new_operations": new_ops})
 
-    if response != "200":
-        logcr(f"error adding orders to stack")
+    if response.status_code != 200:
+        logcr(f"APP: error adding orders to stack")
 
 
 def get_highest_or_default_cart():
@@ -816,8 +816,11 @@ def cart():
             change_quantity(id, new_val)
 
         if "delete_item" in data.keys():
+            #TODO change reserved stuff
             id = data["delete_item"]["id"]
+            
             delete_item(id)
+
 
         data = load_cart_data()
         return render_template("cart_table.html", data=data)

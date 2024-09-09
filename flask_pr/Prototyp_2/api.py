@@ -128,6 +128,9 @@ def availability():
     else:
         return "0"
 
+""" @api.route("/test", methods=["GET", "POST"])
+def testing():
+    return afss_stack.show_stack() """
 
 @api.route("/afss", methods=["GET", "POST"])
 def afss():
@@ -174,17 +177,17 @@ def afss():
             return "200"
         
         if "reserve_band" in req.keys():
-            pass
+            return "501"
 
         if "next_bmos" in req.keys():
             if req["next_bmos"] == "":
-                return "Schick was gescheites du hunt \"\" kanns da sparn"
+                return "400"
             return jsonify(afss_stack.get_current_bmos(int(req["next_bmos"])))
 
         if "new_operations" in req.keys():
             for pair in req["new_operations"]:
                 afss_stack.norm_storing_operation(pair[0], pair[1])
-
+            
             return "200"
         
         if "store_container" in req.keys():
@@ -199,6 +202,11 @@ def afss():
             new_loc.occupation_status = True
             afss_stack.insert_storing_operation(0, new_loc.id)
             return "Command has been sent."
+
+        if "reset_stack" in req.keys():
+            afss_stack.reset_stack_for_testing()
+            afss_stack.norm_storing_operation(31, 0)
+            return "200"
 
 
         if "get_state" in req.keys():

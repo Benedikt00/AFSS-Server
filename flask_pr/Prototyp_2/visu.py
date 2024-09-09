@@ -6,6 +6,8 @@ from internal_logging import *
 
 visu = Blueprint("visu", __name__)
 
+# Currently< not in use
+
 @visu.route("/afss", methods=["GET", "POST"])
 def visu_afss():
 

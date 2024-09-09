@@ -29,8 +29,8 @@ class instruction_stack_afss():
         self.shifters = Config.AFSS_SHIFTER_POSITIONS
         self.shifter_clearance = - 250
 
+        self.fb_reserved = False
         
-
         self.real_state = {}
         
 
@@ -63,6 +63,16 @@ class instruction_stack_afss():
         self.instruction_num = 1
         self.done_instructions = [0]
         pass
+
+    def reset_stack_for_testing(self):
+        self.order_id = 0
+        self.instruction_num = 1
+
+        self.done_instructions = [0]
+        self.pending_instructions = []
+        self.interrupts_in_system = []
+
+        self.create_stack()
 
 
     def show_stack(self):
@@ -336,19 +346,21 @@ class instruction_stack_afss():
         executed_inst_id = int(executed_inst_id)
         instructions_to_send = []
 
-        logcc(f"----- id = {executed_inst_id} --------\n")
+        logcc(f"----- executed id = {executed_inst_id} --------\n")
 
         interrupt_in_system = (self.interrupts_in_system != [])
 
         logcb(f"interrupts: {self.interrupts_in_system}, {interrupt_in_system}")
         logcb(f"pending: {self.pending_instructions}")
-        logcb(f"done: {self.done_instructions}\n\n")
+        logcb(f"done: {self.done_instructions}\n")
+        #logcc(f"Stack: {self.stack}")
 
         self.pending_instruction_ids = [instruction['instruction_id'] for instruction in self.pending_instructions]
 
         if (executed_inst_id not in self.pending_instruction_ids) and (executed_inst_id != 0): #
             logcb(f"No instruction pending with id: {executed_inst_id}")
             return []
+
 
         if executed_inst_id != 0: #get the next instruciton
             
@@ -357,7 +369,7 @@ class instruction_stack_afss():
             self.done_instructions.append(executed_inst_id)
 
             self.pending_instructions.remove(executed_inst)
-            
+            #logcb(f"Done: {self.done_instructions}")
             # remove the instruction from stack
             for area, instructions in self.stack.items():
                 for instruction in instructions:
@@ -375,7 +387,8 @@ class instruction_stack_afss():
                                 if relation in self.done_instructions:
 
                                     if instruction["instruction_id"] not in self.pending_instruction_ids:
-                                        instructions_to_send.append(instruction)
+                                        if instruction not in instructions_to_send:
+                                            instructions_to_send.append(instruction)
                     
                 if instructions_to_send == []: #no more orders to complete, let's begin the interrupt
 
@@ -389,21 +402,33 @@ class instruction_stack_afss():
                                     if relation in self.done_instructions:
 
                                         if instruction["instruction_id"] not in self.pending_instruction_ids:
-                                            instructions_to_send.append(instruction)
+                                            if instruction not in instructions_to_send:
+                                                instructions_to_send.append(instruction)
             
+
             if not interrupt_in_system: #random bullshit go
                 for area, instructions in self.stack.items():
                     for instruction in instructions:
 
-                        for relation in instruction["relation"]:
-                            if relation in self.done_instructions:
+                        
+                        if len(instruction["relation"]) == 1: #ist die relation nur eine inst
+                            relation = instruction["relation"][0]
 
+                            if relation in self.done_instructions:
+                                logcr("In rel")
                                 if instruction["instruction_id"] not in self.pending_instruction_ids:
+                                    logcr("sdfsdf")
                                     instructions_to_send.append(instruction)
                             
                             if relation == 0:
-                                if self.is_lowest_instruction(instruction, instructions) and instruction["instruction_id"] not in self.pending_instruction_ids:
+                                if self.is_lowest_instruction(instruction, instructions) and (instruction["instruction_id"] not in self.pending_instruction_ids):
                                     instructions_to_send.append(instruction)
+                        
+                        else:
+                            if set(instruction["relation"]).issubset(self.done_instructions): #sind alle instructions gemacht die gemacht werden müssen
+                                if instruction["instruction_id"] not in self.pending_instruction_ids:
+                                    instructions_to_send.append(instruction)
+
 
         if executed_inst_id == 0: # sps has no clue
 
@@ -417,9 +442,9 @@ class instruction_stack_afss():
                     for instruction in instructions:
 
                         for relation in instruction["relation"]:
-                            if relation in self.done_instructions:
+                            """ if relation in self.done_instructions:
                                 
-                                instructions_to_send.append(instruction)
+                                instructions_to_send.append(instruction) """
                             
                             if relation == 0:
                                 if self.is_lowest_instruction(instruction, instructions) and instruction["instruction_id"] not in self.pending_instruction_ids:
@@ -430,6 +455,10 @@ class instruction_stack_afss():
             if x != 0: #cant have that, otherwise the paralellity will break
                 self.pending_instructions.append(x)
             
+        """ logcb(f"Sent: {instructions_to_send}")
+        logcb(f"Pending: {self.pending_instructions}")
+        logcb(f"Pending IDS: {self.pending_instruction_ids}") """
+        
 
         return instructions_to_send
 

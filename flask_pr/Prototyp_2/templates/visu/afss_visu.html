@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='visu/afss_visu.css') }}">
+
+    <title>AFSS-Visualisierung</title>
+</head>
+
+<body>
+    {% import "visu/afss_visu_macros.html" as macros%}
+
+    <div class="container">
+        <div class="controls">
+            <div id="c_macro">
+            {{macros.controls()}}
+            </div>
+            
+            <div id="simulator">
+                <button onclick="get_next_inst(0)">New Op</button>
+            </div>
+            <button onclick="reset_stack()">Reset Stack</button>
+        </div>
+        <div class="stack_terminal"></div>
+        <div class="L0"></div>
+        <div class="Band"></div>
+        <div class="storage_flipper"></div>
+
+        <div class="back">
+            <a href="{{url_for('dashb.index')}}">←</a>
+        </div>
+
+    </div>
+
+    <script>
+        
+        let instructions = [];
+
+        function sendData(data, callback) {
+            var xhr = new XMLHttpRequest();
+            var url = "{{url_for('dashb.visu_afss')}}";
+
+            xhr.open("POST", url, true);
+            xhr.setRequestHeader("Content-Type", "application/json");
+
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    callback(xhr.responseText);
+                }
+            };
+
+            var jsonData = JSON.stringify(data);
+            xhr.send(jsonData);
+        }
+
+        function sendDataAPI(data, callback) {
+            var xhr = new XMLHttpRequest();
+            var url = "{{url_for('api.afss')}}";
+
+            xhr.open("POST", url, true);
+            xhr.setRequestHeader("Content-Type", "application/json");
+
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    callback(xhr.responseText);
+                }
+            };
+
+            var jsonData = JSON.stringify(data);
+            xhr.send(jsonData);
+        }
+
+        function reset_stack(){
+            sendDataAPI({"reset_stack": ""}, resetting_stack);
+        }
+
+        function get_stack_data() {
+            sendDataAPI({ "log_stack": "" }, function(d) {
+                document.getElementsByClassName("stack_terminal")[0].innerHTML = d;
+            });
+        }
+
+        function resetting_stack(dt){
+            get_stack_data();
+            instructions = [];
+            render_instructions();
+        }
+
+        get_stack_data();
+
+        // Handles setting the simulation data and updating the DOM
+        function set_sim(responseText) {
+            const newInstructions = JSON.parse(responseText);
+
+            // Merge new instructions with existing ones, avoiding duplicates
+            newInstructions.forEach(newInst => {
+                const exists = instructions.some(inst => inst.instruction_id === newInst.instruction_id);
+                if (!exists) {
+                    instructions.push(newInst);
+                }
+            });
+
+            render_instructions(); // Render the updated instructions list
+        }
+
+        // Renders instructions to the page
+        function render_instructions() {
+            const simulatorDiv = document.getElementById('simulator');
+            
+            // Clear the simulator div content
+            simulatorDiv.innerHTML = '';
+
+            // If there are no instructions, show the "New Op" button
+            if (instructions.length === 0) {
+                const newOpButton = document.createElement('button');
+                newOpButton.textContent = 'New Op';
+                newOpButton.onclick = () => get_next_inst(0);
+                simulatorDiv.appendChild(newOpButton);
+                return;
+            }
+
+            // Loop through the instructions and display them
+            instructions.forEach(instructionData => {
+                const instructionDiv = document.createElement('div');
+                instructionDiv.className = 'instruction';
+                instructionDiv.id = `instruction-${instructionData.instruction_id}`;
+                
+                const instructionText = document.createElement('p');
+                instructionText.innerHTML = `
+                    <strong>Instruction ID:</strong> ${instructionData.instruction_id}<br>
+                    <strong>Order ID:</strong> ${instructionData.order_id}<br>
+                    <strong>Area:</strong> ${instructionData.instruction.area}<br>
+                    <strong>Position:</strong> ${JSON.stringify(instructionData.instruction.pos)}<br>
+                    <strong>Relation:</strong> ${instructionData.relation.join(', ')}
+                `;
+                
+                const removeButton = document.createElement('button');
+                removeButton.textContent = 'Execute';
+                removeButton.onclick = function() {
+                    execute_instruction(instructionData.instruction_id);
+                    remove_instruction(instructionData.instruction_id);
+                };
+
+                instructionDiv.appendChild(instructionText);
+                instructionDiv.appendChild(removeButton);
+                simulatorDiv.appendChild(instructionDiv);
+            });
+        }
+
+        // Removes an instruction from the UI and updates the global state
+        function remove_instruction(instructionId) {
+            const instructionElement = document.getElementById(`instruction-${instructionId}`);
+            if (instructionElement) {
+                instructionElement.remove();
+            }
+            // Remove the instruction from the global instructions array
+            instructions = instructions.filter(inst => inst.instruction_id !== instructionId);
+
+            // If all instructions are removed, show the "New Op" button
+            if (instructions.length === 0) {
+                render_instructions();
+            }
+        }
+
+        // Executes the instruction (custom logic can be implemented here)
+        function execute_instruction(instructionId) {
+            console.log(`Executing instruction with ID: ${instructionId}`);
+            // Custom logic for executing the instruction
+            get_next_inst(instructionId);
+        }
+
+        // Fetches the next instruction from the server
+        function get_next_inst(id) {
+            sendDataAPI({"next_bmos": id}, set_sim);
+            get_stack_data();
+        }
+
+        // On page load, render any existing instructions
+        window.onload = function() {
+            render_instructions();
+        };
+
+
+
+    </script>
+</body>
+
+</html>

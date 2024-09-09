@@ -27,10 +27,11 @@ def visu_afss():
 
             req = request.get_json()
 
-            if "get_storage_flipper":
+            if "get_storage_flipper" in req.keys():
                 return "501"
+            
 
-    return render_template("hw_control/afss_visu.html")
+    return render_template("visu/afss_visu.html")
 
 
 @dashb.route("/control/afss", methods=["GET", "POST"])
